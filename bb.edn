@@ -1,0 +1,3 @@
+{:min-bb-version "0.6.0"
+ :tasks          {gen-grpc-client
+                  (shell "protoc --clojure_out=grpc-client:./src ./proto/ingress_service.proto")}}
