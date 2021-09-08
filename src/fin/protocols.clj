@@ -8,7 +8,9 @@
 
 (defprotocol ITransactionRepository
   (find-between-dates [this from to])
-  (insert-transaction! [this transaction]))
+  (find-where [this where-clauses])
+  (insert-transaction! [this transaction])
+  (update-transaction! [this updated-transaction]))
 
 (defprotocol IIngressService
   (get-transactions [this]))

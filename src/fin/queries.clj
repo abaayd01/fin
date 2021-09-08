@@ -1,7 +1,8 @@
 (ns fin.queries
   (:require [fin.protocols :as p]
             [honey.sql :as sql]
-            [honey.sql.helpers :as h]))
+            [honey.sql.helpers :as h]
+            [tick.core :as t]))
 
 ;; repo level fns
 (defn insert!
@@ -11,6 +12,26 @@
     (-> (h/insert-into table-name)
         (h/values [m])
         sql/format)))
+
+(defn update!
+  [db table-name m]
+  (p/query
+    db
+    (-> {:update table-name
+         :set    (-> m
+                     (dissoc :id)
+                     (assoc :updated_at (t/date-time)))
+         :where  [:= :id (:id m)]}
+        sql/format)))
+
+(defn find-where
+  [db table-name where-clauses]
+  (p/query
+    db
+    (sql/format
+      {:select :*
+       :from   table-name
+       :where  where-clauses})))
 
 (defn find-by-id
   [db table-name id]
