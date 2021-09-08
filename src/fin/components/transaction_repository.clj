@@ -20,8 +20,7 @@
 (defn update-transaction!
   [{:keys [db table-name]} updated-transaction]
   (queries/update! db table-name updated-transaction))
-
-(m/=> insert-transaction!
+(m/=> update-transaction!
       [:=> [:cat
             [:map
              [:db any?]
