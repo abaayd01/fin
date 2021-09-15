@@ -3,6 +3,7 @@
     [fin.protocols :as p]
     [fin.schemas :refer [Transaction Transactions Date]]
     [clojure.java.shell :refer [sh]]
+    [clojure.string :as string]
     [malli.core :as m]
     [grpc.fin.IngressService.client :as ingress-service]
     [protojure.grpc.client.providers.http2 :as grpc-http2]
@@ -38,9 +39,16 @@
       t/date))
 (m/=> ->Date [:=> [:cat :string] Date])
 
+(defn- clean-description-str [str]
+  (-> str
+      string/trim
+      (string/replace #"\s+" " ")
+      (string/replace #"\"" "")
+      string/upper-case))
+
 (defn- ->Transaction [m]
   (merge m
-         {:description      (:description m)
+         {:description      (clean-description-str (:description m))
           :amount           (bigdec (:amount m))
           :transaction_date (->Date (:date m))}))
 (m/=> ->Transaction [:=> [:cat :any] Transaction])
