@@ -4,3 +4,4 @@
 /ingress/
 /lsp/
 /.clj-kondo
+.nrepl-port
