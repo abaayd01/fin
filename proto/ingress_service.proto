@@ -9,6 +9,7 @@ message Transaction {
   string description = 2;
   string amount = 3;
   string source = 4;
+  string accountNumber = 5;
 }
 
 message GetTransactionsResponse {

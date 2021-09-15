@@ -15,7 +15,8 @@
    [:description string?]
    [:amount decimal?]
    [:transaction_date date?]
-   [:source string?]])
+   [:source string?]
+   [:account_number string?]])
 
 (def Date date?)
 (def Transactions [:sequential Transaction])

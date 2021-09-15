@@ -50,7 +50,8 @@
   (merge m
          {:description      (clean-description-str (:description m))
           :amount           (bigdec (:amount m))
-          :transaction_date (->Date (:date m))}))
+          :transaction_date (->Date (:date m))
+          :account_number   (:accountNumber m)}))
 (m/=> ->Transaction [:=> [:cat :any] Transaction])
 
 (defn get-transactions

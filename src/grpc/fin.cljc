@@ -83,13 +83,14 @@
 ;-----------------------------------------------------------------------------
 ; Transaction
 ;-----------------------------------------------------------------------------
-(defrecord Transaction-record [date description amount source]
+(defrecord Transaction-record [date description amount source accountNumber]
   pb/Writer
   (serialize [this os]
     (serdes.core/write-String 1  {:optimize true} (:date this) os)
     (serdes.core/write-String 2  {:optimize true} (:description this) os)
     (serdes.core/write-String 3  {:optimize true} (:amount this) os)
-    (serdes.core/write-String 4  {:optimize true} (:source this) os))
+    (serdes.core/write-String 4  {:optimize true} (:source this) os)
+    (serdes.core/write-String 5  {:optimize true} (:accountNumber this) os))
   pb/TypeReflection
   (gettype [this]
     "grpc.fin.Transaction"))
@@ -98,8 +99,9 @@
 (s/def :grpc.fin.Transaction/description string?)
 (s/def :grpc.fin.Transaction/amount string?)
 (s/def :grpc.fin.Transaction/source string?)
-(s/def ::Transaction-spec (s/keys :opt-un [:grpc.fin.Transaction/date :grpc.fin.Transaction/description :grpc.fin.Transaction/amount :grpc.fin.Transaction/source ]))
-(def Transaction-defaults {:date "" :description "" :amount "" :source "" })
+(s/def :grpc.fin.Transaction/accountNumber string?)
+(s/def ::Transaction-spec (s/keys :opt-un [:grpc.fin.Transaction/date :grpc.fin.Transaction/description :grpc.fin.Transaction/amount :grpc.fin.Transaction/source :grpc.fin.Transaction/accountNumber ]))
+(def Transaction-defaults {:date "" :description "" :amount "" :source "" :accountNumber "" })
 
 (defn cis->Transaction
   "CodedInputStream to Transaction"
@@ -111,6 +113,7 @@
                2 [:description (serdes.core/cis->String is)]
                3 [:amount (serdes.core/cis->String is)]
                4 [:source (serdes.core/cis->String is)]
+               5 [:accountNumber (serdes.core/cis->String is)]
 
                [index (serdes.core/cis->undefined tag is)]))
          is)
