@@ -1,4 +1,4 @@
-{:paths   ["src" "src/java/grpc"]
+{:paths   ["src" "src/java/grpc" "resources"]
 
  :deps    {clojure.java-time/clojure.java-time      {:mvn/version "0.3.2"}
 
@@ -30,6 +30,7 @@
            org.eclipse.jetty.http2/http2-client     {:mvn/version "9.4.20.v20190813"}
            org.eclipse.jetty/jetty-alpn-java-client {:mvn/version "9.4.28.v20200408"}
 
+           org.slf4j/slf4j-simple                   {:mvn/version "1.7.28"}
            org.ow2.asm/asm                          {:mvn/version "8.0.1"}
 
            tick/tick                                {:mvn/version "0.5.0-RC1"}
