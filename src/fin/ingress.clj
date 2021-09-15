@@ -1,7 +1,9 @@
-(ns fin.core
+(ns fin.ingress
   (:gen-class)
   (:require
     [fin.components.db :refer [make-db]]
+    [fin.components.ingress-orchestrator :refer [make-ingress-orchestrator]]
+    [fin.components.ingress-service :refer [make-ingress-service]]
     [fin.components.malli-instrumenter :refer [make-malli-instrumenter]]
     [fin.components.transaction-repository :refer [make-transaction-repository]]
 
@@ -19,10 +21,14 @@
         :ds (connection/component HikariDataSource db-spec)
         :db (make-db)
         :transaction-repository (make-transaction-repository :transactions)
+        :ingress-service (make-ingress-service)
+        :ingress-orchestrator (make-ingress-orchestrator)
         :malli-instrumenter (make-malli-instrumenter))
       (component/system-using
         {:db                     {:ds :ds}
-         :transaction-repository {:db :db}})))
+         :transaction-repository {:db :db}
+         :ingress-orchestrator   {:transaction-repository :transaction-repository
+                                  :ingress-service        :ingress-service}})))
 
 (defonce the-system nil)
 
@@ -41,11 +47,13 @@
 
 (defn reset []
   (stop)
-  (refresh :after 'fin.core/go))
+  (refresh :after 'fin.ingress/go))
 
 (comment
   (start)
   (stop)
   (go)
   (reset)
+  (refresh-all)
+  (p/run (:ingress-orchestrator the-system))
   )
