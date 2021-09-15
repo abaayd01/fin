@@ -1,3 +1,12 @@
 {:min-bb-version "0.6.0"
  :tasks          {gen-grpc-client
-                  (shell "protoc --clojure_out=grpc-client:./src ./proto/ingress_service.proto")}}
+                  (shell "protoc --clojure_out=grpc-client:./src ./proto/ingress_service.proto")
+
+                  db:boot
+                  (shell "docker run --name fin -e MYSQL_ROOT_PASSWORD=password -d -p 3306:3306 mysql:latest")
+
+                  db:start
+                  (shell "docker start fin")
+
+                  db:stop
+                  (shell "docker stop fin")}}
