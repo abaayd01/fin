@@ -1,5 +1,7 @@
 (ns fin.middleware
   (:require
+    [reitit.ring.coercion :as reitit-coercion]
+    [reitit.ring.middleware.exception :as reitit-exception]
     [reitit.ring.middleware.muuntaja
      :refer [format-negotiate-middleware
              format-request-middleware
@@ -23,11 +25,24 @@
   (fn [{:keys [params body-params] :as request}]
     (handler (assoc request :params (merge params body-params)))))
 
-(def pipeline
-  [parameters-middleware
+(defn make-inject-repo-registry-middleware
+  "Inject a repo-registry component into the request map under the keyword :repo-registry.
+
+  The repo-registry component being a stuartsierra/component 'component' which is a
+  registry of other repository components."
+  [repo-registry]
+  (fn [handler]
+    (fn [request]
+      (handler (assoc request :repo-registry repo-registry)))))
+
+(defn make-pipeline [repo-registry]
+  [(make-inject-repo-registry-middleware repo-registry)
+   parameters-middleware
    keywordize-param-keys-middleware
    format-negotiate-middleware
    format-request-middleware
    combine-params-middleware
    format-response-middleware
-   cors-middleware])
+   reitit-exception/exception-middleware
+   reitit-coercion/coerce-request-middleware
+   reitit-coercion/coerce-response-middleware])
