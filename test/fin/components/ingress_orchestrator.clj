@@ -1,21 +1,18 @@
 (ns fin.components.ingress-orchestrator
   (:require
+    [clojure.test :refer :all]
+    [com.stuartsierra.component :as component]
     [fin.components.ingress-orchestrator :refer [make-ingress-orchestrator]]
     [fin.factories :as f]
     [fin.protocols :as p]
     [fin.schemas :as s]
-    [clojure.test :refer :all]
-    [com.stuartsierra.component :as component]
     [malli.core :as m]
     [malli.generator :as mg]
     [malli.transform :as mt]
     [spy.core :as spy]
     [spy.protocol :as protocol]
-    [tick.core :as t]))
-
-(defmacro it
-  [msg form]
-  `(is ~form ~msg))
+    [tick.core :as t]
+    [utils.test :refer [it]]))
 
 (deftest min-by-transaction-date-test
   (testing "with transactions"
