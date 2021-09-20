@@ -13,9 +13,9 @@
   (m/-simple-schema
     {:type            :zoned-date-time-string
      :pred            (fn [in]
-                        (try (let [[_ month day hrs mins secs]
+                        (try (let [[_ month day hrs mins secs _]
                                    (->> in
-                                        (re-matches #"(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})Z")
+                                        (re-matches #"(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}).(\d{3})Z")
                                         rest
                                         (map #(Integer/parseInt %)))]
                                (and (and (> month 0) (<= month 12))
