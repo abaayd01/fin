@@ -90,7 +90,7 @@
 (defn init []
   (alter-var-root #'the-system (constantly
                                  (create-system {:db-spec        db-spec
-                                                 :server-options {:port  3000
+                                                 :server-options {:port  4000
                                                                   :join? false}
                                                  :handler        app}))))
 

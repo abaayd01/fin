@@ -43,6 +43,7 @@
    format-request-middleware
    combine-params-middleware
    format-response-middleware
+   cors-middleware
    reitit-exception/exception-middleware
    reitit-coercion/coerce-request-middleware
    reitit-coercion/coerce-response-middleware])
