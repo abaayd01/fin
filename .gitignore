@@ -1,6 +1,6 @@
-/server/.idea/
+**/.idea/
 /server/fin.iml
-/server/.cpcache/
+**/.cpcache/
 /server/ingress/
 /server/lsp/
 /server/.clj-kondo
