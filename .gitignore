@@ -1,7 +1,7 @@
-/.idea/
-/fin.iml
-/.cpcache/
-/ingress/
-/lsp/
-/.clj-kondo
-.nrepl-port
+/server/.idea/
+/server/fin.iml
+/server/.cpcache/
+/server/ingress/
+/server/lsp/
+/server/.clj-kondo
+/server/.nrepl-port
