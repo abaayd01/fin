@@ -27,8 +27,8 @@ describe("DateRangePicker", () => {
 
   it("calls the onSubmit callback with the input start date and end date, when the 'go' button is clicked", async () => {
     const spy = jest.fn()
-    const expectedStartDayjsDate = dayjs(new Date(2020, 1, 1))
-    const expectedEndDayjsDate = dayjs(new Date(2021, 12, 31))
+    const expectedStartDayjsDate = dayjs("2020-01-01")
+    const expectedEndDayjsDate = dayjs("2021-12-31")
 
     render(<DateRangePicker onSubmit={spy} />)
 

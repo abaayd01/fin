@@ -11,22 +11,22 @@ type DatePickerProps = {
 }
 
 type DateObject = {
-  year: number,
-  month: number,
-  day: number
+  year: number | string,
+  month: number | string,
+  day: number | string
 }
 
 const DatePicker = ({ onChange, initialValue }: DatePickerProps) => {
   const [{ year, month, day }, setDate] = useState<DateObject>({
     year: initialValue.year(),
-    month: initialValue.month(),
+    month: initialValue.month() + 1,
     day: initialValue.date(),
   })
 
   useEffect(() => {
     if (onChange) {
       // @ts-ignore
-      const date = dayjs({ year, month, day })
+      const date = dayjs({ year, month: month - 1, day })
       onChange(date)
     }
   }, [year, month, day, onChange])
@@ -34,39 +34,39 @@ const DatePicker = ({ onChange, initialValue }: DatePickerProps) => {
   return (
     <HStack width="md">
       <FormControl>
-        <FormLabel>Year</FormLabel>
+        <FormLabel fontSize="xs">Year</FormLabel>
         <NumberInput
           min={0}
           value={year}
           onChange={val => setDate(prev => ({
             ...prev,
-            year: parseInt(val),
+            year: parseInt(val) || val,
           }))}>
           <NumberInputField placeholder="year" />
         </NumberInput>
       </FormControl>
       <FormControl>
-        <FormLabel>Month</FormLabel>
+        <FormLabel fontSize="xs">Month</FormLabel>
         <NumberInput
           min={1}
           max={12}
           value={month}
           onChange={val => setDate(prev => ({
             ...prev,
-            month: parseInt(val),
+            month: parseInt(val) || val,
           }))}>
           <NumberInputField placeholder="month" />
         </NumberInput>
       </FormControl>
       <FormControl>
-        <FormLabel>Day</FormLabel>
+        <FormLabel fontSize="xs">Day</FormLabel>
         <NumberInput
           min={1}
           max={31}
           value={day}
           onChange={val => setDate(prev => ({
             ...prev,
-            day: parseInt(val),
+            day: parseInt(val) || val,
           }))}>
           <NumberInputField placeholder="day" />
         </NumberInput>
@@ -75,13 +75,14 @@ const DatePicker = ({ onChange, initialValue }: DatePickerProps) => {
   )
 }
 
-type DateRangeObject = {
+export type DateRangeObject = {
   startDate: Dayjs
   endDate: Dayjs
 }
 
 const DateRangePickerDefaultProps = {
-  onSubmit: (_: DateRangeObject) => null,
+  onSubmit: (_: DateRangeObject) => {
+  },
 }
 
 type DateRangePickerProps = {
@@ -95,14 +96,14 @@ const DateRangePicker = ({ onSubmit }: DateRangePickerProps) => {
   const [endDate, setEndDate] = useState<Dayjs>(now)
 
   return (
-    <VStack align="left">
+    <VStack align="left" spacing={4}>
       <FormControl id="start-date">
         <FormLabel>Start Date</FormLabel>
-        <DatePicker onChange={setStartDate} initialValue={startDate} />
+        <DatePicker onChange={setStartDate} initialValue={now} />
       </FormControl>
       <FormControl id="end-date">
         <FormLabel>End Date</FormLabel>
-        <DatePicker onChange={setEndDate} initialValue={endDate} />
+        <DatePicker onChange={setEndDate} initialValue={now} />
       </FormControl>
       <Button width="md" onClick={() => onSubmit({ startDate, endDate })}>Go</Button>
     </VStack>
