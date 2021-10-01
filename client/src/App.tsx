@@ -35,7 +35,6 @@ export const App = () => {
     to: dayjs().toDate(),
   }))
 
-  console.log("data", data)
   return (
     <ChakraProvider theme={theme}>
       <Box textAlign="center" fontSize="xl">
@@ -58,7 +57,7 @@ export const App = () => {
           </Center>
         </Grid>
       </Box>
-    </ ChakraProvider>
+    </ChakraProvider>
   )
 }
 
