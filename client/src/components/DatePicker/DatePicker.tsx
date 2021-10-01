@@ -1,7 +1,10 @@
 import React from "react"
+import { Input } from "@chakra-ui/react"
 
 const DatePicker = () => {
-  return <div>date picker</div>
+  return (
+    <Input placeholder="month" size="lg" />
+  )
 }
 
 export default DatePicker
