@@ -47,25 +47,28 @@ export const App = () => {
   return (
     <ChakraProvider theme={theme}>
       <Container my={8}>
-        {isLoading ?
-          <Spinner /> :
-          <VStack
-            divider={<StackDivider borderColor="gray.200" />}
-            spacing={8}
-          >
-            <DateRangePicker value={selectedDateRange} onSubmit={handleOnSubmit} />
+        <VStack
+          divider={<StackDivider borderColor="gray.200" />}
+          spacing={8}
+        >
+          <DateRangePicker value={selectedDateRange} onSubmit={handleOnSubmit} />
+          {isLoading ?
+            <Spinner /> :
             <HStack spacing={8} textAlign="center">
-              <Stat>
+              <Stat color="green.500">
                 <StatLabel>In</StatLabel>
                 <StatNumber>${data.in}</StatNumber>
               </Stat>
-              <Stat>
+              <Stat color="red.500">
                 <StatLabel>Out</StatLabel>
                 <StatNumber>${data.out}</StatNumber>
               </Stat>
-            </HStack>
-          </VStack>
-        }
+              <Stat>
+                <StatLabel>Delta</StatLabel>
+                <StatNumber>${(data.in - data.out).toFixed(2)}</StatNumber>
+              </Stat>
+            </HStack>}
+        </VStack>
       </Container>
     </ChakraProvider>
   )
