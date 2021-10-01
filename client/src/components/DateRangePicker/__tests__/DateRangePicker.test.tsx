@@ -9,20 +9,22 @@ dayjs.extend(objectSupport)
 
 describe("DateRangePicker", () => {
   it("renders", () => {
-    render(<DateRangePicker />)
+    render(<DateRangePicker value={{ startDate: dayjs(), endDate: dayjs() }} />)
   })
 
-  it("calls the onSubmit callback with today's date as the start date and end date, when the 'go' button is clicked", async () => {
+  it("calls the onSubmit callback with the given start date and end date, when the 'go' button is clicked", async () => {
     const spy = jest.fn()
-    const expectedDate = dayjs().startOf("day")
+    const expectedStartDayjsDate = dayjs("2020-01-01")
+    const expectedEndDayjsDate = dayjs("2021-12-31")
 
-    render(<DateRangePicker onSubmit={spy} />)
+    render(<DateRangePicker
+      value={{ startDate: expectedStartDayjsDate, endDate: expectedEndDayjsDate }} onSubmit={spy} />)
 
     const btn = await screen.findByRole("button", { name: /go/i })
 
     userEvent.click(btn)
 
-    expect(spy).toBeCalledWith({ startDate: expectedDate, endDate: expectedDate })
+    expect(spy).toBeCalledWith({ startDate: expectedStartDayjsDate, endDate: expectedEndDayjsDate })
   })
 
   it("calls the onSubmit callback with the input start date and end date, when the 'go' button is clicked", async () => {
@@ -30,7 +32,7 @@ describe("DateRangePicker", () => {
     const expectedStartDayjsDate = dayjs("2020-01-01")
     const expectedEndDayjsDate = dayjs("2021-12-31")
 
-    render(<DateRangePicker onSubmit={spy} />)
+    render(<DateRangePicker value={{ startDate: dayjs(), endDate: dayjs() }} onSubmit={spy} />)
 
     const [startYearInput, endYearInput] = await screen.findAllByLabelText(/year/i)
     const [startMonthInput, endMonthInput] = await screen.findAllByLabelText(/month/i)

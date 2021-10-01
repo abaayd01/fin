@@ -86,24 +86,23 @@ const DateRangePickerDefaultProps = {
 }
 
 type DateRangePickerProps = {
+  value: DateRangeObject
   onSubmit?: (dateRange: DateRangeObject) => void
 } & typeof DateRangePickerDefaultProps
 
-const now = dayjs()
-
-const DateRangePicker = ({ onSubmit }: DateRangePickerProps) => {
-  const [startDate, setStartDate] = useState<Dayjs>(now)
-  const [endDate, setEndDate] = useState<Dayjs>(now)
+const DateRangePicker = ({ value, onSubmit }: DateRangePickerProps) => {
+  const [startDate, setStartDate] = useState<Dayjs>(value.startDate)
+  const [endDate, setEndDate] = useState<Dayjs>(value.endDate)
 
   return (
     <VStack align="left" spacing={4}>
       <FormControl id="start-date">
         <FormLabel>Start Date</FormLabel>
-        <DatePicker onChange={setStartDate} initialValue={now} />
+        <DatePicker onChange={setStartDate} initialValue={startDate} />
       </FormControl>
       <FormControl id="end-date">
         <FormLabel>End Date</FormLabel>
-        <DatePicker onChange={setEndDate} initialValue={now} />
+        <DatePicker onChange={setEndDate} initialValue={endDate} />
       </FormControl>
       <Button width="md" onClick={() => onSubmit({ startDate, endDate })}>Go</Button>
     </VStack>
