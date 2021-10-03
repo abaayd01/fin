@@ -13,11 +13,11 @@
                                  p/ITransactionRepository
                                  (reify p/ITransactionRepository
                                    (find-between-dates [_ _ _]
-                                     [(f/Transaction {:amount 1M})
-                                      (f/Transaction {:amount 2M})
-                                      (f/Transaction {:amount 3M})
-                                      (f/Transaction {:amount -5M})
-                                      (f/Transaction {:amount -4M})])))
+                                     [(f/Transaction {:amount 1M :transaction_date (t/date "2021-08-20")})
+                                      (f/Transaction {:amount -1M :transaction_date (t/date "2021-08-20")})
+                                      (f/Transaction {:amount 2M :transaction_date (t/date "2021-08-20")})
+                                      (f/Transaction {:amount -2M :transaction_date (t/date "2021-08-21")})
+                                      (f/Transaction {:amount -4M :transaction_date (t/date "2021-08-20")})])))
 
         find-between-dates-spy (:find-between-dates (protocol/spies transaction-repository))
 
@@ -29,8 +29,14 @@
         result                 (get-transaction-summary req)]
 
     (testing "with a valid request"
-      (it "returns the correct total in and out"
-          (= {:status 200 :body {:in 6M :out 9M}} result))
+      (it "returns the correct response body"
+          (= {:status 200
+              :body   {:in      3M
+                       :out     7M
+                       :in-ext  2M
+                       :out-ext 6M
+                       :delta   -4M}}
+             result))
 
       (it "calls the find-between-dates with the correct date range"
           (spy/called-once-with?

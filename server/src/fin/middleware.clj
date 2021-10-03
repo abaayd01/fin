@@ -1,5 +1,7 @@
 (ns fin.middleware
   (:require
+    [camel-snake-kebab.core :as csk]
+    [camel-snake-kebab.extras :as cske]
     [reitit.ring.coercion :as reitit-coercion]
     [reitit.ring.middleware.exception :as reitit-exception]
     [reitit.ring.middleware.muuntaja
@@ -35,6 +37,13 @@
     (fn [request]
       (handler (assoc request :repo-registry repo-registry)))))
 
+(defn format-response-body-keys-as-snake-case-middleware
+  "Convert kebab case keys to snake case keys in the response body."
+  [handler]
+  (fn [request]
+    (let [response (handler request)]
+      (assoc response :body (cske/transform-keys csk/->snake_case_keyword (:body response))))))
+
 (defn make-pipeline [repo-registry]
   [(make-inject-repo-registry-middleware repo-registry)
    parameters-middleware
@@ -46,4 +55,5 @@
    cors-middleware
    reitit-exception/exception-middleware
    reitit-coercion/coerce-request-middleware
-   reitit-coercion/coerce-response-middleware])
+   reitit-coercion/coerce-response-middleware
+   format-response-body-keys-as-snake-case-middleware])

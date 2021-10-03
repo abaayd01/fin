@@ -26,7 +26,7 @@
 
 (defn- grpc-get-transactions
   []
-  (-> @(grpc-http2/connect {:uri          "http://localhost:8080"
+  (-> @(grpc-http2/connect {:uri          "http://localhost:50051"
                             :idle-timeout 60000})
       (ingress-service/getTransactions {})
       deref

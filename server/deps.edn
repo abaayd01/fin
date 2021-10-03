@@ -1,6 +1,8 @@
 {:paths   ["src" "src/java/grpc" "resources"]
 
- :deps    {clojure.java-time/clojure.java-time      {:mvn/version "0.3.2"}
+ :deps    {camel-snake-kebab/camel-snake-kebab      {:mvn/version "0.4.2"}
+
+           clojure.java-time/clojure.java-time      {:mvn/version "0.3.2"}
 
            com.stuartsierra/component               {:mvn/version "1.0.0"}
 
