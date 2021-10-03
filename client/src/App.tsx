@@ -54,20 +54,35 @@ export const App = () => {
           <DateRangePicker value={selectedDateRange} onSubmit={handleOnSubmit} />
           {isLoading ?
             <Spinner /> :
-            <HStack spacing={8} textAlign="center">
-              <Stat color="green.500">
-                <StatLabel>In</StatLabel>
-                <StatNumber>${data.in}</StatNumber>
-              </Stat>
-              <Stat color="red.500">
-                <StatLabel>Out</StatLabel>
-                <StatNumber>${data.out}</StatNumber>
-              </Stat>
-              <Stat>
-                <StatLabel>Delta</StatLabel>
-                <StatNumber>${(data.in - data.out).toFixed(2)}</StatNumber>
-              </Stat>
-            </HStack>}
+            (
+              <VStack textAlign="center">
+                <HStack spacing={8} textAlign="center">
+                  <Stat color="green.500" size="xs">
+                    <StatLabel>In</StatLabel>
+                    <StatNumber>${data.in}</StatNumber>
+                  </Stat>
+                  <Stat color="red.500" size="xs">
+                    <StatLabel>Out</StatLabel>
+                    <StatNumber>${data.out}</StatNumber>
+                  </Stat>
+                </HStack>
+                <HStack spacing={8} textAlign="center">
+                  <Stat color="green.500" size="xs">
+                    <StatLabel>In Ext.</StatLabel>
+                    <StatNumber>${data.in_ext}</StatNumber>
+                  </Stat>
+                  <Stat color="red.500" size="xs">
+                    <StatLabel>Out Ext.</StatLabel>
+                    <StatNumber>${data.out_ext}</StatNumber>
+                  </Stat>
+                </HStack>
+                <Stat>
+                  <StatLabel>Delta</StatLabel>
+                  <StatNumber>${data.delta}</StatNumber>
+                </Stat>
+              </VStack>
+            )
+          }
         </VStack>
       </Container>
     </ChakraProvider>
