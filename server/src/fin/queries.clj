@@ -47,6 +47,7 @@
   (p/query
     db
     (sql/format
-      {:select :*
-       :from   table-name
-       :where  [:between column-key from to]})))
+      {:select   :*
+       :from     table-name
+       :where    [:between column-key from to]
+       :order-by [[column-key :desc]]})))
