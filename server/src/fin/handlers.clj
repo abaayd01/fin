@@ -33,10 +33,11 @@
         in-out     (sum-txns-to-in-and-out txns)
         ext-in-out (sum-txns-to-in-and-out-ext txns)
 
-        body       (merge in-out ext-in-out {:delta (- (:in in-out) (:out in-out))})]
+
+        stats      (merge in-out ext-in-out {:delta (- (:in in-out) (:out in-out))})]
     {:status 200
-     :body   body}))
-(m/=> get-transaction-summary [:=> [:cat :any] (Response TransactionSummary)])
+     :body   {:stats stats
+              :transactions txns}}))
 
 (comment
   )

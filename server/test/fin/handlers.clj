@@ -8,16 +8,19 @@
             [tick.core :as t]
             [utils.test :refer [it]]))
 
+(def stub-transactions
+  [(f/Transaction {:amount -2M :transaction_date (t/date "2021-08-21")})
+   (f/Transaction {:amount 1M :transaction_date (t/date "2021-08-20")})
+   (f/Transaction {:amount -1M :transaction_date (t/date "2021-08-20")})
+   (f/Transaction {:amount 2M :transaction_date (t/date "2021-08-20")})
+   (f/Transaction {:amount -4M :transaction_date (t/date "2021-08-20")})])
+
 (deftest get-transaction-summary-test
   (let [transaction-repository (protocol/spy
                                  p/ITransactionRepository
                                  (reify p/ITransactionRepository
                                    (find-between-dates [_ _ _]
-                                     [(f/Transaction {:amount 1M :transaction_date (t/date "2021-08-20")})
-                                      (f/Transaction {:amount -1M :transaction_date (t/date "2021-08-20")})
-                                      (f/Transaction {:amount 2M :transaction_date (t/date "2021-08-20")})
-                                      (f/Transaction {:amount -2M :transaction_date (t/date "2021-08-21")})
-                                      (f/Transaction {:amount -4M :transaction_date (t/date "2021-08-20")})])))
+                                     stub-transactions)))
 
         find-between-dates-spy (:find-between-dates (protocol/spies transaction-repository))
 
@@ -31,11 +34,12 @@
     (testing "with a valid request"
       (it "returns the correct response body"
           (= {:status 200
-              :body   {:in      3M
-                       :out     7M
-                       :in-ext  2M
-                       :out-ext 6M
-                       :delta   -4M}}
+              :body   {:stats        {:in      3M
+                                      :out     7M
+                                      :in-ext  2M
+                                      :out-ext 6M
+                                      :delta   -4M}
+                       :transactions stub-transactions}}
              result))
 
       (it "calls the find-between-dates with the correct date range"

@@ -44,10 +44,5 @@
 (def Date date?)
 (def Transactions [:sequential Transaction])
 
-(def TransactionSummary
-  [:map
-   [:in decimal?]
-   [:out decimal?]])
-
 (comment
   )
