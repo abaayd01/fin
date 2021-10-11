@@ -1,22 +1,105 @@
 import React, { useState } from "react"
 import {
+  Box,
   ChakraProvider,
-  Container,
+  Flex,
+  Grid,
   HStack,
   Spinner,
   Stat,
   StatLabel,
   StatNumber,
+  Table,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr,
   VStack,
-  StackDivider,
   theme,
 } from "@chakra-ui/react"
 import axios from "axios"
-import dayjs from "dayjs"
+import dayjs, { Dayjs } from "dayjs"
+
 import { useQuery } from "react-query"
 
 import "./App.scss"
 import DateRangePicker, { DateRangeObject } from "./components/DateRangePicker/DateRangePicker"
+
+type BaseTransaction = {
+  description: string
+  amount: number
+}
+
+type Transaction = BaseTransaction & {
+  transaction_date: Dayjs
+}
+
+type TransactionResponse = BaseTransaction & {
+  transaction_date: string
+}
+
+type Stats = {
+  in_ext: number;
+  out_ext: number;
+  delta: number;
+}
+
+type StatsBarProps = {
+  stats: Stats
+}
+
+const StatsBar = ({ stats }: StatsBarProps) => {
+  const {
+    in_ext,
+    out_ext,
+    delta,
+  } = stats
+
+  return (
+    <HStack width="100%" textAlign="center" mb={3}>
+      <Stat color="green.500">
+        <StatLabel>In Ext.</StatLabel>
+        <StatNumber>${in_ext}</StatNumber>
+      </Stat>
+      <Stat color="red.500">
+        <StatLabel>Out Ext.</StatLabel>
+        <StatNumber>${out_ext}</StatNumber>
+      </Stat>
+      <Stat>
+        <StatLabel>Delta</StatLabel>
+        <StatNumber>${delta}</StatNumber>
+      </Stat>
+    </HStack>
+  )
+}
+
+type TransactionsTableProps = {
+  transactions: Transaction[]
+}
+
+const TransactionsTable = ({ transactions }: TransactionsTableProps) => {
+  return (
+    <Table variant="simple">
+      <Thead>
+        <Tr>
+          <Th>Description</Th>
+          <Th>Amount</Th>
+          <Th>Date</Th>
+        </Tr>
+      </Thead>
+      <Tbody>
+        {transactions.map(txn => (
+          <Tr>
+            <Td>{txn.description}</Td>
+            <Td>{txn.amount}</Td>
+            <Td>{txn.transaction_date.format("DD/MM/YYYY")}</Td>
+          </Tr>
+        ))}
+      </Tbody>
+    </Table>
+  )
+}
 
 async function getTransactionSummary({ from, to }: { from: Date, to: Date }) {
   const response = await axios.get("http://localhost:4000/api/transaction-summary", {
@@ -26,7 +109,13 @@ async function getTransactionSummary({ from, to }: { from: Date, to: Date }) {
     },
   })
 
-  return response.data
+  return {
+    ...response.data,
+    transactions: response.data.transactions.map((t: TransactionResponse) => ({
+      ...t,
+      transaction_date: dayjs(t.transaction_date),
+    })),
+  }
 }
 
 export const App = () => {
@@ -35,7 +124,10 @@ export const App = () => {
     endDate: dayjs().startOf("day"),
   })
 
-  const { data, isLoading } = useQuery(["transaction-summary", selectedDateRange], () => getTransactionSummary({
+  const {
+    data,
+    isLoading,
+  } = useQuery<{ transactions: Transaction[], stats: Stats }, Error>(["transaction-summary", selectedDateRange], () => getTransactionSummary({
     from: selectedDateRange.startDate.toDate(),
     to: selectedDateRange.endDate.toDate(),
   }))
@@ -46,46 +138,29 @@ export const App = () => {
 
   return (
     <ChakraProvider theme={theme}>
-      <Container my={8}>
-        <VStack
-          divider={<StackDivider borderColor="gray.200" />}
-          spacing={8}
-        >
-          <DateRangePicker value={selectedDateRange} onSubmit={handleOnSubmit} />
-          {isLoading ?
-            <Spinner /> :
-            (
-              <VStack textAlign="center">
-                <HStack spacing={8} textAlign="center">
-                  <Stat color="green.500" size="xs">
-                    <StatLabel>In</StatLabel>
-                    <StatNumber>${data.in}</StatNumber>
-                  </Stat>
-                  <Stat color="red.500" size="xs">
-                    <StatLabel>Out</StatLabel>
-                    <StatNumber>${data.out}</StatNumber>
-                  </Stat>
-                </HStack>
-                <HStack spacing={8} textAlign="center">
-                  <Stat color="green.500" size="xs">
-                    <StatLabel>In Ext.</StatLabel>
-                    <StatNumber>${data.in_ext}</StatNumber>
-                  </Stat>
-                  <Stat color="red.500" size="xs">
-                    <StatLabel>Out Ext.</StatLabel>
-                    <StatNumber>${data.out_ext}</StatNumber>
-                  </Stat>
-                </HStack>
-                <Stat>
-                  <StatLabel>Delta</StatLabel>
-                  <StatNumber>${data.delta}</StatNumber>
-                </Stat>
+      <Grid templateColumns="1fr 3fr" height="100vh" p={5} gap={5}>
+        <Box p={5} backgroundColor="gray.50" borderRadius="md">
+          <DateRangePicker
+            value={selectedDateRange}
+            onSubmit={handleOnSubmit} />
+        </Box>
+        <Box>
+          <Box>
+            {isLoading ?
+              <Flex justifyContent="center" flexGrow={1}>
+                <Spinner />
+              </Flex>
+              :
+              <VStack>
+                <StatsBar stats={data.stats} />
+                <Box maxHeight="800" overflowY="scroll" w="100%">
+                  <TransactionsTable transactions={data.transactions} />
+                </Box>
               </VStack>
-            )
-          }
-        </VStack>
-      </Container>
+            }
+          </Box>
+        </Box>
+      </Grid>
     </ChakraProvider>
   )
 }
-
