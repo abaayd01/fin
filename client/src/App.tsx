@@ -78,6 +78,14 @@ type TransactionsTableProps = {
   transactions: Transaction[]
 }
 
+const formatCurrency = (val: number): string => {
+  if (val < 0) {
+    return `-$${Math.abs(val).toFixed(2)}`
+  }
+
+  return `$${val.toFixed(2)}`
+}
+
 const TransactionsTable = ({transactions}: TransactionsTableProps) => {
   return (
     <Table variant="simple">
@@ -92,7 +100,7 @@ const TransactionsTable = ({transactions}: TransactionsTableProps) => {
         {transactions.map(txn => (
           <Tr>
             <Td>{txn.description}</Td>
-            <Td>{txn.amount}</Td>
+            <Td>{formatCurrency(txn.amount)}</Td>
             <Td>{txn.transaction_date.format("DD/MM/YYYY")}</Td>
           </Tr>
         ))}
