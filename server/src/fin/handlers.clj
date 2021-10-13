@@ -2,8 +2,6 @@
   (:require
     [clojure.math.numeric-tower :as math]
     [fin.protocols :as p]
-    [fin.schemas :refer [Response TransactionSummary]]
-    [malli.core :as m]
     [tick.core :as t]))
 
 (defn- sum-txns-to-in-and-out [txns]
