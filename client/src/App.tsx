@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, {useState} from "react"
 import {
   Box,
   ChakraProvider,
@@ -19,12 +19,12 @@ import {
   theme,
 } from "@chakra-ui/react"
 import axios from "axios"
-import dayjs, { Dayjs } from "dayjs"
+import dayjs, {Dayjs} from "dayjs"
 
-import { useQuery } from "react-query"
+import {useQuery} from "react-query"
 
 import "./App.scss"
-import DateRangePicker, { DateRangeObject } from "./components/DateRangePicker/DateRangePicker"
+import DateRangePicker, {DateRangeObject} from "./components/DateRangePicker/DateRangePicker"
 
 type BaseTransaction = {
   description: string
@@ -49,7 +49,7 @@ type StatsBarProps = {
   stats: Stats
 }
 
-const StatsBar = ({ stats }: StatsBarProps) => {
+const StatsBar = ({stats}: StatsBarProps) => {
   const {
     in_ext,
     out_ext,
@@ -78,7 +78,7 @@ type TransactionsTableProps = {
   transactions: Transaction[]
 }
 
-const TransactionsTable = ({ transactions }: TransactionsTableProps) => {
+const TransactionsTable = ({transactions}: TransactionsTableProps) => {
   return (
     <Table variant="simple">
       <Thead>
@@ -101,7 +101,7 @@ const TransactionsTable = ({ transactions }: TransactionsTableProps) => {
   )
 }
 
-async function getTransactionSummary({ from, to }: { from: Date, to: Date }) {
+async function getTransactionSummary({from, to}: { from: Date, to: Date }) {
   const response = await axios.get("http://localhost:4000/api/transaction-summary", {
     params: {
       from,
@@ -124,16 +124,37 @@ export const App = () => {
     endDate: dayjs().startOf("day"),
   })
 
-  const {
-    data,
-    isLoading,
-  } = useQuery<{ transactions: Transaction[], stats: Stats }, Error>(["transaction-summary", selectedDateRange], () => getTransactionSummary({
-    from: selectedDateRange.startDate.toDate(),
-    to: selectedDateRange.endDate.toDate(),
-  }))
+  const transactionSummary = useQuery<{ transactions: Transaction[], stats: Stats }, Error>(
+    ["transaction-summary", selectedDateRange],
+    () => getTransactionSummary({
+      from: selectedDateRange.startDate.toDate(),
+      to: selectedDateRange.endDate.toDate(),
+    }))
 
   const handleOnSubmit = (dateRangeObject: DateRangeObject) => {
     setSelectedDateRange(dateRangeObject)
+  }
+
+  const renderTransactionSummaryData = () => {
+    if (transactionSummary.isLoading || transactionSummary.isIdle) {
+      return (<Flex justifyContent="center" flexGrow={1}>
+          <Spinner/>
+        </Flex>
+      )
+    }
+
+    if (transactionSummary.isError) {
+      return null
+    }
+
+    return (
+      <VStack>
+        <StatsBar stats={transactionSummary.data.stats}/>
+        <Box maxHeight="800" overflowY="scroll" w="100%">
+          <TransactionsTable transactions={transactionSummary.data.transactions}/>
+        </Box>
+      </VStack>
+    )
   }
 
   return (
@@ -142,22 +163,11 @@ export const App = () => {
         <Box p={5} backgroundColor="gray.50" borderRadius="md">
           <DateRangePicker
             value={selectedDateRange}
-            onSubmit={handleOnSubmit} />
+            onSubmit={handleOnSubmit}/>
         </Box>
         <Box>
           <Box>
-            {isLoading ?
-              <Flex justifyContent="center" flexGrow={1}>
-                <Spinner />
-              </Flex>
-              :
-              <VStack>
-                <StatsBar stats={data.stats} />
-                <Box maxHeight="800" overflowY="scroll" w="100%">
-                  <TransactionsTable transactions={data.transactions} />
-                </Box>
-              </VStack>
-            }
+            {renderTransactionSummaryData()}
           </Box>
         </Box>
       </Grid>
