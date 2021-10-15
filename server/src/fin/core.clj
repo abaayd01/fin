@@ -13,7 +13,8 @@
     [reitit.coercion.malli :as rcm]
     [reitit.ring :as ring]
     [ring.adapter.jetty :as jetty]
-    [fin.protocols :as p])
+    [fin.protocols :as p]
+    [tick.core :as t])
   (:import (com.zaxxer.hikari HikariDataSource)))
 
 (defn app
