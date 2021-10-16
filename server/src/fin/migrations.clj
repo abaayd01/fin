@@ -10,10 +10,17 @@
                                     :password "password"}})
 
 (comment
-  (migratus/create config "create transactions table unique index")
   (migratus/destroy config "create transactions table unique index")
+
   (migratus/migrate config)
-  (migratus/up config)
+
   (migratus/rollback config)
+
   (migratus/completed-list config)
+
+  (migratus/create config "create transactions table unique index")
+
+  (migratus/create config "create categories table")
+
+  (migratus/create config "seed categories table" :edn)
   )

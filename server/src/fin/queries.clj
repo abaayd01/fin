@@ -6,11 +6,11 @@
 
 ;; repo level fns
 (defn insert!
-  [db table-name m]
+  [db table-name & vals]
   (p/query
     db
     (-> (h/insert-into table-name)
-        (h/values [m])
+        (h/values vals)
         sql/format)))
 
 (defn update!
