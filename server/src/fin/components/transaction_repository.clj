@@ -44,6 +44,9 @@
       id
       associations))
 
+  (find-where [this where-clauses]
+    (queries/find-where (:db this) table-name where-clauses))
+
   p/ITransactionRepository
   (find-between-dates [this from to]
     (queries/deep-query
@@ -53,9 +56,6 @@
        :where    [:between :transaction_date from to]
        :order-by [[:transaction_date :desc]]}
       associations))
-
-  (find-where [this where-clauses]
-    (queries/find-where (:db this) table-name where-clauses))
 
   (insert-transaction! [this transaction]
     (insert-transaction! this transaction))

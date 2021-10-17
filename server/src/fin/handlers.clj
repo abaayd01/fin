@@ -80,5 +80,11 @@
       {:status 200
        :body   (view-models/->transaction txn)})))
 
+(defn index-categories [req]
+  (let [repo       (get-in req [:repo-registry :category-repository])
+        categories (p/find-all repo)]
+    {:status 200
+     :body   (map view-models/->category categories)}))
+
 (comment
   )

@@ -6,6 +6,7 @@
     [fin.components.db :refer [make-db]]
     [fin.components.malli-instrumenter :refer [make-malli-instrumenter]]
     [fin.components.transaction-repository :refer [make-transaction-repository]]
+    [fin.components.category-repository :refer [make-category-repository]]
     [fin.middleware :as middleware]
     [fin.handlers :as handlers]
     [fin.schemas :as s]
@@ -58,7 +59,11 @@
          :parameters {:path [:map
                              [:transaction_id int?]]
                       :body [:map
-                             [:category_ids [:sequential int?]]]}}]])
+                             [:category_ids [:sequential int?]]]}}]
+
+       ["/categories"
+        {:name    ::categories
+         :handler handlers/index-categories}]])
     (ring/routes
       (ring/create-default-handler))))
 
@@ -74,10 +79,13 @@
 (defn make-server [options]
   (map->Server {:options options}))
 
-(defrecord RepoRegistry [transaction-repository]
+(defrecord RepoRegistry
+  [transaction-repository
+   category-repository]
   component/Lifecycle
   (start [this]
-    (assoc this :repo-registry {:transaction-repository transaction-repository}))
+    (assoc this :repo-registry {:transaction-repository transaction-repository
+                                :category-repository    category-repository}))
 
   (stop [this]
     (assoc this :repo-registry nil)))
@@ -92,13 +100,16 @@
         :ds (connection/component HikariDataSource db-spec)
         :db (make-db)
         :transaction-repository (make-transaction-repository :transactions)
+        :category-repository (make-category-repository :categories)
         :repo-registry (make-repo-registry)
         :malli-instrumenter (make-malli-instrumenter)
         :server (make-server server-options))
       (component/system-using
         {:db                     {:ds :ds}
          :transaction-repository {:db :db}
-         :repo-registry          {:transaction-repository :transaction-repository}
+         :category-repository    {:db :db}
+         :repo-registry          {:transaction-repository :transaction-repository
+                                  :category-repository    :category-repository}
          :server                 {:repo-registry :repo-registry}})))
 
 (defonce the-system nil)
@@ -129,4 +140,5 @@
   (stop)
   (go)
   (reset)
+
   )
