@@ -6,6 +6,12 @@
 
     [malli.core :as m]))
 
+(def associations
+  {:many-to-many-associations [{:association-table-name :categories
+                                :join-table-name        :transactions_categories
+                                :fk-join-base           :transaction_id
+                                :fk-join-association    :category_id}]})
+
 (defn insert-transaction!
   [{:keys [db table-name]} transaction]
   (queries/insert! db table-name transaction))
@@ -31,12 +37,19 @@
 (defrecord TransactionRepository [db table-name]
   p/IRepository
   (find-by-id [this id]
-    (queries/find-by-id (:db this) table-name id))
+    (queries/deep-find-by-id
+      (:db this)
+      :transactions
+      id
+      associations))
 
   p/ITransactionRepository
   (find-between-dates [this from to]
-    (queries/find-between-dates
-      (:db this) table-name :transaction_date from to))
+    (queries/deep-find-where
+      (:db this)
+      :transactions
+      [:between :transaction_date from to]
+      associations))
 
   (find-where [this where-clauses]
     (queries/find-where (:db this) table-name where-clauses))
