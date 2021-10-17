@@ -4,6 +4,7 @@
     [fin.queries :as queries]
     [fin.schemas :refer [Transaction]]
 
+    [honey.sql :as sql]
     [malli.core :as m]))
 
 (def associations
@@ -61,6 +62,22 @@
 
   (update-transaction! [this updated-transaction]
     (update-transaction! this updated-transaction))
+
+  (add-category-to-transaction! [this transaction_id category_id]
+    (queries/insert!
+      (:db this)
+      :transactions_categories
+      {:transaction_id transaction_id
+       :category_id    category_id}))
+
+  (remove-category-from-transaction! [this transaction_id category_id]
+    (p/query
+      (:db this)
+      (sql/format
+        {:delete-from :transactions_categories
+         :where       [:and
+                       [:= :transaction_id transaction_id]
+                       [:= :category_id category_id]]})))
   )
 
 (defn make-transaction-repository [table-name]

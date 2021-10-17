@@ -1,9 +1,11 @@
 (ns fin.handlers
   (:require
+    [fin.view-models :as view-models]
+    [fin.protocols :as p]
+
     [clojure.edn :as edn]
     [clojure.java.io :as io]
     [clojure.math.numeric-tower :as math]
-    [fin.protocols :as p]
     [tick.core :as t])
   (:import [java.io PushbackReader]))
 
@@ -44,8 +46,36 @@
         stats      (merge in-out ext-in-out {:delta (- (:in-ext ext-in-out) (:out-ext ext-in-out))})]
     {:status 200
      :body   {:stats        stats
-              :transactions ext-txns}}))
+              :transactions (map view-models/->transaction ext-txns)}}))
 
+(defn show-transaction [req]
+  (let [{:keys [id]} (get-in req [:parameters :path])
+        repo (get-in req [:repo-registry :transaction-repository])
+        txn  (p/find-by-id repo id)]
+    {:status 200
+     :body   (view-models/->transaction txn)}))
+
+(defn add-category-to-transaction
+  [req]
+  (let [{:keys [transaction_id category_id]} (get-in req [:parameters :path])
+        repo (get-in req [:repo-registry :transaction-repository])]
+
+    (p/add-category-to-transaction! repo transaction_id category_id)
+
+    (let [txn (p/find-by-id repo transaction_id)]
+      {:status 200
+       :body   (view-models/->transaction txn)})))
+
+(defn remove-category-from-transaction
+  [req]
+  (let [{:keys [transaction_id category_id]} (get-in req [:parameters :path])
+        repo (get-in req [:repo-registry :transaction-repository])]
+
+    (p/remove-category-from-transaction! repo transaction_id category_id)
+
+    (let [txn (p/find-by-id repo transaction_id)]
+      {:status 200
+       :body   (view-models/->transaction txn)})))
 
 (comment
   )

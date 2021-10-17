@@ -54,6 +54,7 @@
    format-response-middleware
    cors-middleware
    reitit-exception/exception-middleware
+   reitit-coercion/coerce-exceptions-middleware
    reitit-coercion/coerce-request-middleware
    reitit-coercion/coerce-response-middleware
    format-response-body-keys-as-snake-case-middleware])

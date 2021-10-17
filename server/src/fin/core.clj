@@ -27,7 +27,7 @@
         :middleware (middleware/make-pipeline repo-registry)
         :coercion   (rcm/create
                       {;; set of keys to include in error messages
-                       :error-keys       #{#_:type #_:coercion #_:in #_:schema #_:value #_:errors :humanized #_:transformed}
+                       :error-keys       #{#_:type :coercion #_:in #_:schema #_:value :errors :humanized #_:transformed}
                        ;; validate request & response
                        :validate         true
                        ;; top-level short-circuit to disable request & response coercion
@@ -39,11 +39,26 @@
                        ;; malli options
                        :options          nil})}
 
-       ["/transaction-summary" {:get        handlers/get-transaction-summary
-                                :parameters {:query [:map
-                                                     [:from s/zoned-date-time-string?]
-                                                     [:to s/zoned-date-time-string?]]}
-                                :name       ::transactions}]])
+       ["/transaction-summary"
+        {:name       ::get-transaction-summary
+         :handler    handlers/get-transaction-summary
+         :parameters {:query [:map
+                              [:from s/zoned-date-time-string?]
+                              [:to s/zoned-date-time-string?]]}}]
+
+       ["/transactions/:id"
+        {:name       ::transactions
+         :handler    handlers/show-transaction
+         :parameters {:path [:map
+                             [:id int?]]}}]
+
+       ["/transactions/:transaction_id/categories/:category_id"
+        {:name       ::transaction-categories
+         :post       handlers/add-category-to-transaction
+         :delete     handlers/remove-category-from-transaction
+         :parameters {:path [:map
+                             [:transaction_id int?]
+                             [:category_id int?]]}}]])
     (ring/routes
       (ring/create-default-handler))))
 

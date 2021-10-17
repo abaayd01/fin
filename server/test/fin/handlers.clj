@@ -3,6 +3,7 @@
             [fin.handlers :refer [get-transaction-summary]]
             [fin.factories :as f]
             [fin.protocols :as p]
+            [fin.view-models :as view-models]
             [pjstadig.humane-test-output :as humane]
             [spy.core :as spy]
             [spy.protocol :as protocol]
@@ -47,7 +48,7 @@
                                       :in-ext  2M
                                       :out-ext 6M
                                       :delta   -4M}
-                       :transactions external-transactions}}
+                       :transactions (map view-models/->transaction external-transactions)}}
              result))
 
       (it "calls the find-between-dates with the correct date range"
