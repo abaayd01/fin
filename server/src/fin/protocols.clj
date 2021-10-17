@@ -12,7 +12,8 @@
   (insert-transaction! [this transaction])
   (update-transaction! [this updated-transaction])
   (add-category-to-transaction! [this transaction_id category_id])
-  (remove-category-from-transaction! [this transaction_id category_id]))
+  (remove-category-from-transaction! [this transaction_id category_id])
+  (get-categories-for-transaction [this transaction_id]))
 
 (defprotocol IIngressService
   (get-transactions [this]))

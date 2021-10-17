@@ -3,9 +3,11 @@
     [fin.view-models :as view-models]
     [fin.protocols :as p]
 
+    [clojure.data :refer [diff]]
     [clojure.edn :as edn]
     [clojure.java.io :as io]
     [clojure.math.numeric-tower :as math]
+    [clojure.tools.logging :refer [log]]
     [tick.core :as t])
   (:import [java.io PushbackReader]))
 
@@ -55,23 +57,24 @@
     {:status 200
      :body   (view-models/->transaction txn)}))
 
-(defn add-category-to-transaction
+(defn set-categories-for-transaction
   [req]
-  (let [{:keys [transaction_id category_id]} (get-in req [:parameters :path])
-        repo (get-in req [:repo-registry :transaction-repository])]
+  (let [{:keys [transaction_id]} (get-in req [:parameters :path])
+        {new_category_ids :category_ids} (get-in req [:params])
+        repo                 (get-in req [:repo-registry :transaction-repository])
+        current_category_ids (map :id (p/get-categories-for-transaction repo transaction_id))
+        [ids_to_add ids_to_remove _] (map vec (diff (set new_category_ids) (set current_category_ids)))]
 
-    (p/add-category-to-transaction! repo transaction_id category_id)
+    (doseq [category_id ids_to_remove]
+      (try (p/remove-category-from-transaction! repo transaction_id category_id)
+           (catch Exception e
+             (log :info (str "could not remove category id " category_id " from transaction id " transaction_id ".n" (.getMessage e))))))
 
-    (let [txn (p/find-by-id repo transaction_id)]
-      {:status 200
-       :body   (view-models/->transaction txn)})))
-
-(defn remove-category-from-transaction
-  [req]
-  (let [{:keys [transaction_id category_id]} (get-in req [:parameters :path])
-        repo (get-in req [:repo-registry :transaction-repository])]
-
-    (p/remove-category-from-transaction! repo transaction_id category_id)
+    (doseq [category_id ids_to_add]
+      (try
+        (p/add-category-to-transaction! repo transaction_id category_id)
+        (catch Exception e
+          (log :info (str "could not add category id " category_id " from transaction id " transaction_id ".\n" (.getMessage e))))))
 
     (let [txn (p/find-by-id repo transaction_id)]
       {:status 200

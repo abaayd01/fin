@@ -52,13 +52,13 @@
          :parameters {:path [:map
                              [:id int?]]}}]
 
-       ["/transactions/:transaction_id/categories/:category_id"
+       ["/transactions/:transaction_id/categories"
         {:name       ::transaction-categories
-         :post       handlers/add-category-to-transaction
-         :delete     handlers/remove-category-from-transaction
+         :put        handlers/set-categories-for-transaction
          :parameters {:path [:map
-                             [:transaction_id int?]
-                             [:category_id int?]]}}]])
+                             [:transaction_id int?]]
+                      :body [:map
+                             [:category_ids [:sequential int?]]]}}]])
     (ring/routes
       (ring/create-default-handler))))
 

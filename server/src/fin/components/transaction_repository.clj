@@ -63,6 +63,16 @@
   (update-transaction! [this updated-transaction]
     (update-transaction! this updated-transaction))
 
+  (get-categories-for-transaction [this transaction_id]
+    (p/query
+      (:db this)
+      (sql/format
+        {:select :categories/*
+         :from   :categories
+         :join   [:transactions_categories
+                  [:= :transactions_categories.category_id :categories.id]]
+         :where  [:= :transactions_categories.transaction_id transaction_id]})))
+
   (add-category-to-transaction! [this transaction_id category_id]
     (queries/insert!
       (:db this)
