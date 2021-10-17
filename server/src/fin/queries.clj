@@ -35,19 +35,69 @@
 
 (defn find-by-id
   [db table-name id]
-  (p/query
-    db
-    (sql/format
-      {:select :*
-       :from   table-name
-       :where  [:= :id id]})))
+  (first (p/query
+           db
+           (sql/format
+             {:select :*
+              :from   table-name
+              :where  [:= :id id]
+              :limit  1}))))
 
-(defn find-between-dates
-  [db table-name column-key from to]
-  (p/query
-    db
-    (sql/format
-      {:select   :*
-       :from     table-name
-       :where    [:between column-key from to]
-       :order-by [[column-key :desc]]})))
+(defn- concat-keywords
+  ([a b] (concat-keywords a b "."))
+  ([a b sep] (keyword (str (name a) sep (name b)))))
+
+(defn hydrate-many-to-many-association
+  [db
+   records
+   {:keys [association-table-name
+           join-table-name
+           fk-join-base
+           fk-join-association]}]
+  (let [joined-records            (p/query
+                                    db
+                                    (sql/format
+                                      {:select [(concat-keywords association-table-name :* "/") fk-join-base]
+                                       :from   association-table-name
+                                       :join   [join-table-name
+                                                [:=
+                                                 (concat-keywords join-table-name fk-join-association)
+                                                 (concat-keywords association-table-name :id)]]
+                                       :where  [:in fk-join-base (map :id records)]}))
+        associations-by-record-id (group-by fk-join-base joined-records)]
+    (map
+      (fn [record]
+        (let [associated-records (get associations-by-record-id (:id record))]
+          (assoc record association-table-name associated-records)))
+      records)))
+
+(defn deep-find-where
+  [db
+   base-table-name
+   where-clauses
+   {:keys [many-to-many-associations]}]
+  (let [records (find-where db base-table-name where-clauses)]
+    (reduce
+      (fn [acc many-to-many-association]
+        (hydrate-many-to-many-association
+          db
+          acc
+          many-to-many-association))
+      records
+      many-to-many-associations)))
+
+(defn deep-find-by-id
+  [db
+   base-table-name
+   id
+   {:keys [many-to-many-associations]}]
+  (let [record (find-by-id db base-table-name id)]
+    (first
+      (reduce
+        (fn [acc many-to-many-association]
+          (hydrate-many-to-many-association
+            db
+            acc
+            many-to-many-association))
+        [record]
+        many-to-many-associations))))
