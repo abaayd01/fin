@@ -71,12 +71,11 @@
           (assoc record association-table-name associated-records)))
       records)))
 
-(defn deep-find-where
+(defn deep-query
   [db
-   base-table-name
-   where-clauses
+   data
    {:keys [many-to-many-associations]}]
-  (let [records (find-where db base-table-name where-clauses)]
+  (let [records (p/query db (sql/format data))]
     (reduce
       (fn [acc many-to-many-association]
         (hydrate-many-to-many-association

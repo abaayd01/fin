@@ -45,10 +45,12 @@
 
   p/ITransactionRepository
   (find-between-dates [this from to]
-    (queries/deep-find-where
+    (queries/deep-query
       (:db this)
-      :transactions
-      [:between :transaction_date from to]
+      {:select   :*
+       :from     :transactions
+       :where    [:between :transaction_date from to]
+       :order-by [[:transaction_date :desc]]}
       associations))
 
   (find-where [this where-clauses]
