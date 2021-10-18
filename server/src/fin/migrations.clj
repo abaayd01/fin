@@ -10,8 +10,6 @@
                                     :password "password"}})
 
 (comment
-  (migratus/destroy config "create transactions table unique index")
-
   (migratus/migrate config)
 
   (migratus/rollback config)
@@ -23,4 +21,6 @@
   (migratus/create config "create categories table")
 
   (migratus/create config "seed categories table" :edn)
+
+  (migratus/destroy config "create transactions categories table")
   )
