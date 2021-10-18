@@ -1,0 +1,3 @@
+{:ns      fin.migrations.seed-transaction-category-patterns-table
+ :up-fn   migrate-up
+ :down-fn migrate-down}
