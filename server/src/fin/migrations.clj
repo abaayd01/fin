@@ -23,4 +23,8 @@
   (migratus/create config "seed categories table" :edn)
 
   (migratus/destroy config "create transactions categories table")
+
+  (migratus/create config "create transaction category patterns table")
+
+  (migratus/create config "seed transaction category patterns table" :edn)
   )
