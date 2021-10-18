@@ -35,27 +35,63 @@
             Transaction]
        :any])
 
+(defn apply-category-patterns
+  [category-patterns transaction]
+  (let [matched-patterns
+        (filter
+          #(re-find
+             (re-pattern (str "(?i)" (:pattern %)))
+             (:description transaction))
+          category-patterns)]
+    (assoc
+      transaction
+      :categories
+      (concat
+        (:categories transaction)
+        (distinct (map :category matched-patterns))))))
+
+(defn get-category-patterns [db]
+  (map
+    (fn [m]
+      (-> m
+          (assoc :category {:id   (:category_id m)
+                            :name (:category_name m)})
+          (dissoc :category_id :category_name)))
+    (p/query
+      db
+      (sql/format
+        {:select [:transaction_category_patterns/*
+                  [:categories/name :category_name]
+                  [:categories/id :category_id]]
+         :from   :transaction_category_patterns
+         :join   [:categories [:= :transaction_category_patterns.category_id :categories.id]]}))))
+
 (defrecord TransactionRepository [db table-name]
   p/IRepository
   (find-by-id [this id]
-    (queries/deep-find-by-id
-      (:db this)
-      :transactions
-      id
-      associations))
+    (apply-category-patterns
+      (get-category-patterns (:db this))
+      (queries/deep-find-by-id
+        (:db this)
+        :transactions
+        id
+        associations)))
 
   (find-where [this where-clauses]
     (queries/find-where (:db this) table-name where-clauses))
 
   p/ITransactionRepository
   (find-between-dates [this from to]
-    (queries/deep-query
-      (:db this)
-      {:select   :*
-       :from     :transactions
-       :where    [:between :transaction_date from to]
-       :order-by [[:transaction_date :desc]]}
-      associations))
+    (let [category-patterns (get-category-patterns (:db this))]
+      (map
+        #(apply-category-patterns category-patterns %)
+        (queries/deep-query
+          (:db this)
+          {:select   :*
+           :from     :transactions
+           :where    [:between :transaction_date from to]
+           :order-by [[:transaction_date :desc]]}
+          associations))))
 
   (insert-transaction! [this transaction]
     (insert-transaction! this transaction))
@@ -92,3 +128,6 @@
 
 (defn make-transaction-repository [table-name]
   (map->TransactionRepository {:table-name table-name}))
+
+(comment
+  )
