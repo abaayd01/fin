@@ -86,5 +86,15 @@
     {:status 200
      :body   (map view-models/->category categories)}))
 
+(defn create-transaction-category-pattern [req]
+  (let [repo (get-in req [:repo-registry :transaction-category-pattern-repository])
+        {:keys [pattern category_id]} (get-in req [:params])]
+    (p/insert!
+      repo
+      {:pattern     pattern
+       :category_id category_id})
+    {:status 200
+     :body   {}}))
+
 (comment
   )
