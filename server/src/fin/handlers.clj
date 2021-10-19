@@ -62,7 +62,7 @@
   (let [{:keys [transaction_id]} (get-in req [:parameters :path])
         {new_category_ids :category_ids} (get-in req [:params])
         repo                 (get-in req [:repo-registry :transaction-repository])
-        current_category_ids (map :id (p/get-categories-for-transaction repo transaction_id))
+        current_category_ids (map :id (p/categories-for-transaction repo transaction_id))
         [ids_to_add ids_to_remove _] (map vec (diff (set new_category_ids) (set current_category_ids)))]
 
     (doseq [category_id ids_to_remove]

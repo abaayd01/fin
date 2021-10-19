@@ -31,7 +31,7 @@
         transactions (p/find-where (:transaction-repository system) [])]
     (doseq [{:keys [description] :as transaction} transactions]
       (let [updated-description (clean-description-str description)]
-        (p/update-transaction!
+        (p/update!
           (:transaction-repository system)
           (assoc transaction :description updated-description))))
     (component/stop system)))

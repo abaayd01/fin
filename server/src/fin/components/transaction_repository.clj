@@ -50,7 +50,7 @@
         (:categories transaction)
         (distinct (map :category matched-patterns))))))
 
-(defn get-category-patterns [db]
+(defn find-all-category-patterns [db]
   (map
     (fn [m]
       (-> m
@@ -69,37 +69,38 @@
 (defrecord TransactionRepository [db table-name]
   p/IRepository
   (find-by-id [this id]
-    (apply-category-patterns
-      (get-category-patterns (:db this))
-      (queries/deep-find-by-id
-        (:db this)
-        :transactions
-        id
-        associations)))
+    (let [record            (queries/deep-find-by-id
+                              (:db this)
+                              :transactions
+                              id
+                              associations)
+          category-patterns (find-all-category-patterns (:db this))]
+      (->> record
+           (apply-category-patterns category-patterns))))
 
   (find-where [this where-clauses]
     (queries/find-where (:db this) table-name where-clauses))
 
-  p/ITransactionRepository
-  (find-between-dates [this from to]
-    (let [category-patterns (get-category-patterns (:db this))]
-      (map
-        #(apply-category-patterns category-patterns %)
-        (queries/deep-query
-          (:db this)
-          {:select   :*
-           :from     :transactions
-           :where    [:between :transaction_date from to]
-           :order-by [[:transaction_date :desc]]}
-          associations))))
-
-  (insert-transaction! [this transaction]
+  (insert! [this transaction]
     (insert-transaction! this transaction))
 
-  (update-transaction! [this updated-transaction]
+  (update! [this updated-transaction]
     (update-transaction! this updated-transaction))
 
-  (get-categories-for-transaction [this transaction_id]
+  p/ITransactionRepository
+  (find-between-dates [this from to]
+    (let [records           (queries/deep-query
+                              (:db this)
+                              {:select   :*
+                               :from     :transactions
+                               :where    [:between :transaction_date from to]
+                               :order-by [[:transaction_date :desc]]}
+                              associations)
+          category-patterns (find-all-category-patterns (:db this))]
+      (->> records
+           (map #(apply-category-patterns category-patterns %)))))
+
+  (categories-for-transaction [this transaction_id]
     (p/query
       (:db this)
       (sql/format
