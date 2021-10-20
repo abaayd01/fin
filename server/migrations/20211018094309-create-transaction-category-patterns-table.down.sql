@@ -1,0 +1,1 @@
+drop table transaction_category_patterns;

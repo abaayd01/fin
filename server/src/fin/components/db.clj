@@ -6,8 +6,11 @@
     [next.jdbc.date-time :as dt]
     [next.jdbc.result-set :as rs]))
 
-(defn- db-exec [ds sql]
-  (jdbc/execute! (ds) sql {:builder-fn rs/as-unqualified-maps}))
+(defn- db-exec
+  ([ds sql]
+   (db-exec ds sql {:builder-fn rs/as-unqualified-maps}))
+  ([ds sql opts]
+   (jdbc/execute! (ds) sql opts)))
 
 (defrecord DB [ds]
   component/Lifecycle

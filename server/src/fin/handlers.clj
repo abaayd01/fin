@@ -62,7 +62,7 @@
   (let [{:keys [transaction_id]} (get-in req [:parameters :path])
         {new_category_ids :category_ids} (get-in req [:params])
         repo                 (get-in req [:repo-registry :transaction-repository])
-        current_category_ids (map :id (p/get-categories-for-transaction repo transaction_id))
+        current_category_ids (map :id (p/categories-for-transaction repo transaction_id))
         [ids_to_add ids_to_remove _] (map vec (diff (set new_category_ids) (set current_category_ids)))]
 
     (doseq [category_id ids_to_remove]
@@ -85,6 +85,16 @@
         categories (p/find-all repo)]
     {:status 200
      :body   (map view-models/->category categories)}))
+
+(defn create-transaction-category-pattern [req]
+  (let [repo (get-in req [:repo-registry :transaction-category-pattern-repository])
+        {:keys [pattern category_id]} (get-in req [:params])]
+    (p/insert!
+      repo
+      {:pattern     pattern
+       :category_id category_id})
+    {:status 200
+     :body   {}}))
 
 (comment
   )

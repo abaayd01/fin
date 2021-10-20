@@ -1,20 +1,23 @@
 (ns fin.core
   (:gen-class)
   (:require
-    [clojure.tools.namespace.repl :refer [refresh refresh-all]]
-    [com.stuartsierra.component :as component]
     [fin.components.db :refer [make-db]]
     [fin.components.malli-instrumenter :refer [make-malli-instrumenter]]
+    [fin.components.transaction-category-pattern-repository :refer [make-transaction-category-pattern-repository]]
     [fin.components.transaction-repository :refer [make-transaction-repository]]
     [fin.components.category-repository :refer [make-category-repository]]
-    [fin.middleware :as middleware]
     [fin.handlers :as handlers]
+    [fin.middleware :as middleware]
+    [fin.protocols :as p]
     [fin.schemas :as s]
+
+    [clojure.tools.namespace.repl :refer [refresh]]
+    [com.stuartsierra.component :as component]
+    [muuntaja.core :as muuntaja-core]
     [next.jdbc.connection :as connection]
     [reitit.coercion.malli :as rcm]
     [reitit.ring :as ring]
     [ring.adapter.jetty :as jetty]
-    [fin.protocols :as p]
     [tick.core :as t])
   (:import (com.zaxxer.hikari HikariDataSource)))
 
@@ -24,7 +27,7 @@
   (ring/ring-handler
     (ring/router
       ["/api"
-       {:muuntaja   (muuntaja.core/create)
+       {:muuntaja   (muuntaja-core/create)
         :middleware (middleware/make-pipeline repo-registry)
         :coercion   (rcm/create
                       {;; set of keys to include in error messages
@@ -63,7 +66,14 @@
 
        ["/categories"
         {:name    ::categories
-         :handler handlers/index-categories}]])
+         :handler handlers/index-categories}]
+
+       ["/transaction-category-patterns"
+        {:name       ::transaction-category-patterns
+         :post       handlers/create-transaction-category-pattern
+         :parameters {:body [:map
+                             [:category_id int?]
+                             [:pattern string?]]}}]])
     (ring/routes
       (ring/create-default-handler))))
 
@@ -101,16 +111,19 @@
         :db (make-db)
         :transaction-repository (make-transaction-repository :transactions)
         :category-repository (make-category-repository :categories)
+        :transaction-category-pattern-repository (make-transaction-category-pattern-repository)
         :repo-registry (make-repo-registry)
         :malli-instrumenter (make-malli-instrumenter)
         :server (make-server server-options))
       (component/system-using
-        {:db                     {:ds :ds}
-         :transaction-repository {:db :db}
-         :category-repository    {:db :db}
-         :repo-registry          {:transaction-repository :transaction-repository
-                                  :category-repository    :category-repository}
-         :server                 {:repo-registry :repo-registry}})))
+        {:db                                      {:ds :ds}
+         :transaction-repository                  {:db :db}
+         :category-repository                     {:db :db}
+         :transaction-category-pattern-repository {:db :db}
+         :repo-registry                           {:transaction-repository                  :transaction-repository
+                                                   :category-repository                     :category-repository
+                                                   :transaction-category-pattern-repository :transaction-category-pattern-repository}
+         :server                                  {:repo-registry :repo-registry}})))
 
 (defonce the-system nil)
 
@@ -140,5 +153,4 @@
   (stop)
   (go)
   (reset)
-
   )

@@ -55,7 +55,7 @@
           txns-to-insert (diff-transactions ingress-txns db-txns)]
       (doseq [txn txns-to-insert]
         (try
-          (p/insert-transaction! transaction-repository txn)
+          (p/insert! transaction-repository txn)
           (catch Exception e
             (log :info (str "caught exception: " (.getMessage e))))))
 
