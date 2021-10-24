@@ -2,7 +2,6 @@
   (:require
     [fin.components.db :refer [make-db]]
     [fin.protocols :as p]
-    [fin.queries :as queries]
 
     [com.stuartsierra.component :as component]
     [honey.sql :as sql]
@@ -19,13 +18,13 @@
 (defn migrate-up [{:keys [db]}]
   (let [db-spec (dissoc (assoc db :username (:user db)) :user)
         system  (component/start-system (create-system {:db-spec db-spec}))]
-    (queries/insert!
+    (p/execute!
       (:db system)
-      :categories
-      {:name "Food"}
-      {:name "Entertainment"}
-      {:name "Bills"}
-      {:name "Salary"})
+      (sql/format {:insert-into [:categories]
+                   :values      [{:name "Food"}
+                                 {:name "Entertainment"}
+                                 {:name "Bills"}
+                                 {:name "Salary"}]}))
     (component/stop system)))
 
 (defn migrate-down [{:keys [db]}]

@@ -3,9 +3,6 @@
   (:require
     [fin.components.db :refer [make-db]]
     [fin.components.malli-instrumenter :refer [make-malli-instrumenter]]
-    [fin.components.transaction-category-pattern-repository :refer [make-transaction-category-pattern-repository]]
-    [fin.components.transaction-repository :refer [make-transaction-repository]]
-    [fin.components.category-repository :refer [make-category-repository]]
     [fin.handlers :as handlers]
     [fin.middleware :as middleware]
     [fin.protocols :as p]
@@ -109,20 +106,10 @@
   (-> (component/system-map
         :ds (connection/component HikariDataSource db-spec)
         :db (make-db)
-        :transaction-repository (make-transaction-repository :transactions)
-        :category-repository (make-category-repository :categories)
-        :transaction-category-pattern-repository (make-transaction-category-pattern-repository)
-        :repo-registry (make-repo-registry)
         :malli-instrumenter (make-malli-instrumenter)
         :server (make-server server-options))
       (component/system-using
         {:db                                      {:ds :ds}
-         :transaction-repository                  {:db :db}
-         :category-repository                     {:db :db}
-         :transaction-category-pattern-repository {:db :db}
-         :repo-registry                           {:transaction-repository                  :transaction-repository
-                                                   :category-repository                     :category-repository
-                                                   :transaction-category-pattern-repository :transaction-category-pattern-repository}
          :server                                  {:repo-registry :repo-registry}})))
 
 (defonce the-system nil)

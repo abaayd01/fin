@@ -1,4 +1,4 @@
-(ns fin.middleware
+(ns fin.application.api.middleware
   (:require
     [camel-snake-kebab.core :as csk]
     [camel-snake-kebab.extras :as cske]
@@ -27,15 +27,15 @@
   (fn [{:keys [params body-params] :as request}]
     (handler (assoc request :params (merge params body-params)))))
 
-(defn make-inject-repo-registry-middleware
+(defn make-inject-application-service-middleware
   "Inject a repo-registry component into the request map under the keyword :repo-registry.
 
   The repo-registry component being a stuartsierra/component 'component' which is a
   registry of other repository components."
-  [repo-registry]
+  [application-service]
   (fn [handler]
     (fn [request]
-      (handler (assoc request :repo-registry repo-registry)))))
+      (handler (assoc request :application-service application-service)))))
 
 (defn format-response-body-keys-as-snake-case-middleware
   "Convert kebab case keys to snake case keys in the response body."
@@ -44,8 +44,9 @@
     (let [response (handler request)]
       (assoc response :body (cske/transform-keys csk/->snake_case_keyword (:body response))))))
 
-(defn make-pipeline [repo-registry]
-  [(make-inject-repo-registry-middleware repo-registry)
+(defn make-pipeline
+  [application-service]
+  [(make-inject-application-service-middleware application-service)
    parameters-middleware
    keywordize-param-keys-middleware
    format-negotiate-middleware
