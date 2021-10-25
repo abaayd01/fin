@@ -1,8 +1,32 @@
 (ns fin.infrastructure.persistence.mysql-repository
   (:require
     [fin.core.repository :as r]
+    [fin.core.domain.transaction :refer [map->Transaction]]
     [fin.infrastructure.persistence.db :as db]
+
+    [clojure.data :refer [diff]]
     [honey.sql :as sql]))
+
+(defn make-transaction [m]
+  (map->Transaction {:id               (:transactions/id m)
+                     :description      (:transactions/description m)
+                     :amount           (:transactions/amount m)
+                     :transaction-date (:transactions/transaction_date m)
+                     :categories       (:categories m)}))
+
+(defn make-category [m]
+  (cond
+    (:categories/name m) (:categories/name m)
+    (:name m) (:name m)))
+
+(defn- find-all-categories
+  [db]
+  (->> (db/execute!
+         db
+         (sql/format
+           {:select :*
+            :from   :categories}))
+       (map make-category)))
 
 (defn- apply-category-patterns
   [transaction category-patterns]
@@ -14,16 +38,35 @@
           category-patterns)]
     (assoc
       transaction
-      :transactions/categories
+      :categories
       (distinct
         (concat
-          (:transactions/categories transaction)
+          (:categories transaction)
           (map :categories/name matched-patterns))))))
 
 (defn- assoc-categories
   [transaction categories-by-txn-id]
-  (let [categories (map :categories/name (get categories-by-txn-id (:transactions/id transaction)))]
-    (assoc transaction :transactions/categories categories)))
+  (let [categories (map make-category (get categories-by-txn-id (:transactions/id transaction)))]
+    (assoc transaction :categories categories)))
+
+(defn- find-transaction-by-id
+  [db transaction-id]
+  (let [txn-row     (first (db/execute!
+                             db
+                             (sql/format
+                               {:select :*
+                                :from   :transactions
+                                :where  [:= :transactions.id transaction-id]})))
+        categories  (map make-category
+                         (db/execute!
+                           db
+                           (sql/format
+                             {:select [:categories/name :transactions_categories.transaction_id]
+                              :from   :transactions_categories
+                              :join   [:categories [:= :transactions_categories.category_id :categories.id]]
+                              :where  [:= :transactions_categories.transaction_id transaction-id]})))
+        transaction (assoc txn-row :categories categories)]
+    (make-transaction transaction)))
 
 (defn- find-transactions-between-dates
   [db from to]
@@ -56,21 +99,65 @@
         transactions         (->> txn-rows
                                   (map #(assoc-categories % categories-by-txn-id))
                                   (map #(apply-category-patterns % category-patterns)))]
-    transactions))
+    (map make-transaction transactions)))
+
+(defn- get-category-rows [db categories]
+  (when (seq categories)
+    (db/execute!
+      db
+      (sql/format
+        {:select :*
+         :from   :categories
+         :where  [:in :categories/name categories]}))))
+
+(defn- remove-categories-from-transaction!
+  [db transaction categories]
+  (let [category-ids   (map :categories/id (get-category-rows db categories))
+        transaction-id (:id transaction)]
+    (when (seq category-ids)
+      (db/execute!
+        db
+        (sql/format
+          {:delete-from :transactions_categories
+           :where       [:and
+                         [:in :category_id category-ids]
+                         [:= :transaction_id transaction-id]]})))))
+
+(defn- add-categories-for-transaction!
+  [db transaction categories]
+  (let [category-ids   (map :categories/id (get-category-rows db categories))
+        transaction-id (:id transaction)]
+    (when (seq category-ids)
+      (db/execute!
+        db
+        (sql/format
+          {:insert-into :transactions_categories
+           :values      (map
+                          (fn [x] {:category_id    x
+                                   :transaction_id transaction-id})
+                          category-ids)})))))
+
+(defn- tag-transaction-with-categories!
+  [db transaction categories]
+  (let [{existing-categories :categories} transaction
+        [to-remove to-add] (into [] (map (partial filter seq)) (diff existing-categories categories))]
+    (remove-categories-from-transaction! db transaction to-remove)
+    (add-categories-for-transaction! db transaction to-add)
+    (find-transaction-by-id db (:id transaction))))
 
 (defrecord MySqlRepository [db]
   r/Repository
-  (find-all-categories
-    [this]
-    (db/execute!
-      (:db this)
-      (sql/format
-        {:select :*
-         :from   :categories})))
+  (find-all-categories [this]
+    (find-all-categories (:db this)))
 
-  (find-transactions-between-dates
-    [this from to]
-    (find-transactions-between-dates (:db this) from to)))
+  (find-transaction-by-id [this transaction-id]
+    (find-transaction-by-id (:db this) transaction-id))
+
+  (find-transactions-between-dates [this from to]
+    (find-transactions-between-dates (:db this) from to))
+
+  (tag-transaction-with-categories! [this transaction categories]
+    (tag-transaction-with-categories! (:db this) transaction categories)))
 
 (defn make-repository []
   (map->MySqlRepository {}))

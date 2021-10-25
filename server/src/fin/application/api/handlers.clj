@@ -27,3 +27,23 @@
                                      application-service
                                      from
                                      to)}}))
+
+(defn get-transaction
+  [req]
+  (let [application-service (:application-service req)
+        transaction-id      (get-in req [:parameters :path :transaction-id])]
+    {:status 200
+     :body   (service/find-transaction-by-id
+               application-service
+               transaction-id)}))
+
+(defn tag-transaction
+  [req]
+  (let [application-service (:application-service req)
+        transaction-id      (get-in req [:parameters :path :transaction-id])
+        categories          (get-in req [:parameters :body :categories])]
+    {:status 200
+     :body   (service/tag-transaction-with-categories
+               application-service
+               transaction-id
+               categories)}))

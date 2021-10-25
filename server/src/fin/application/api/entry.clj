@@ -59,7 +59,23 @@
          :handler    handlers/get-transaction-summary
          :parameters {:query [:map
                               [:from zoned-date-time-string?]
-                              [:to zoned-date-time-string?]]}}]])
+                              [:to zoned-date-time-string?]]}}]
+
+       ["/transactions"
+        ["/:transaction-id"
+         {:name       ::show-transaction
+          :handler    handlers/get-transaction
+          :parameters {:path [:map
+                              [:transaction-id int?]]}}]
+
+        ["/:transaction-id/tag"
+         {:name       ::tag-transaction
+          :put        handlers/tag-transaction
+          :parameters {:path [:map
+                              [:transaction-id int?]]
+                       :body [:map
+                              [:categories
+                               [:sequential string?]]]}}]]])
 
     (ring/routes
       (ring/create-default-handler))))
