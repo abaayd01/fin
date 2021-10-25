@@ -7,6 +7,9 @@
     [clojure.data :refer [diff]]
     [honey.sql :as sql]))
 
+(defn map-keys [m f]
+  (into {} (map (fn [[k v]] {k (f v)})) m))
+
 (defn make-transaction [m]
   (map->Transaction {:id               (:transactions/id m)
                      :description      (:transactions/description m)
@@ -46,7 +49,7 @@
 
 (defn- assoc-categories
   [transaction categories-by-txn-id]
-  (let [categories (map make-category (get categories-by-txn-id (:transactions/id transaction)))]
+  (let [categories (get categories-by-txn-id (:transactions/id transaction))]
     (assoc transaction :categories categories)))
 
 (defn- find-transaction-by-id
@@ -78,7 +81,7 @@
                                   :where    [:between :transaction_date from to]
                                   :order-by [[:transaction_date :desc]]}))
 
-        txn-categories       (when (seq txn-rows)
+        category-rows        (when (seq txn-rows)
                                (db/execute!
                                  db
                                  (sql/format
@@ -87,7 +90,8 @@
                                     :join   [:categories [:= :transactions_categories.category_id :categories.id]]
                                     :where  [:in :transactions_categories.transaction_id (map :transactions/id txn-rows)]})))
 
-        categories-by-txn-id (group-by :transactions_categories/transaction_id txn-categories)
+        categories-by-txn-id (-> (group-by :transactions_categories/transaction_id category-rows)
+                                 (map-keys (partial map make-category)))
 
         category-patterns    (db/execute!
                                db
