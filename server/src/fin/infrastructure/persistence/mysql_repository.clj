@@ -10,17 +10,23 @@
 (defn map-keys [m f]
   (into {} (map (fn [[k v]] {k (f v)})) m))
 
-(defn make-transaction [m]
-  (map->Transaction {:id               (:transactions/id m)
-                     :description      (:transactions/description m)
-                     :amount           (:transactions/amount m)
-                     :transaction-date (:transactions/transaction_date m)
-                     :categories       (:categories m)}))
+(defn row->transaction [row]
+  (map->Transaction {:id               (:transactions/id row)
+                     :description      (:transactions/description row)
+                     :amount           (:transactions/amount row)
+                     :transaction-date (:transactions/transaction_date row)
+                     :categories       (:categories row)}))
 
-(defn make-category [m]
+(defn transaction->row [transaction]
+  {:id               (:id transaction)
+   :description      (:description transaction)
+   :amount           (:amount transaction)
+   :transaction_date (:transaction-date transaction)})
+
+(defn row->category [row]
   (cond
-    (:categories/name m) (:categories/name m)
-    (:name m) (:name m)))
+    (:categories/name row) (:categories/name row)
+    (:name row) (:name row)))
 
 (defn- find-all-categories
   [db]
@@ -29,7 +35,7 @@
          (sql/format
            {:select :*
             :from   :categories}))
-       (map make-category)))
+       (map row->category)))
 
 (defn- apply-category-patterns
   [transaction category-patterns]
@@ -60,7 +66,7 @@
                                {:select :*
                                 :from   :transactions
                                 :where  [:= :transactions.id transaction-id]})))
-        categories  (map make-category
+        categories  (map row->category
                          (db/execute!
                            db
                            (sql/format
@@ -69,7 +75,7 @@
                               :join   [:categories [:= :transactions_categories.category_id :categories.id]]
                               :where  [:= :transactions_categories.transaction_id transaction-id]})))
         transaction (assoc txn-row :categories categories)]
-    (make-transaction transaction)))
+    (row->transaction transaction)))
 
 (defn- find-transactions-between-dates
   [db from to]
@@ -91,7 +97,7 @@
                                     :where  [:in :transactions_categories.transaction_id (map :transactions/id txn-rows)]})))
 
         categories-by-txn-id (-> (group-by :transactions_categories/transaction_id category-rows)
-                                 (map-keys (partial map make-category)))
+                                 (map-keys (partial map row->category)))
 
         category-patterns    (db/execute!
                                db
@@ -103,7 +109,7 @@
         transactions         (->> txn-rows
                                   (map #(assoc-categories % categories-by-txn-id))
                                   (map #(apply-category-patterns % category-patterns)))]
-    (map make-transaction transactions)))
+    (map row->transaction transactions)))
 
 (defn- get-category-rows [db categories]
   (when (seq categories)
@@ -149,6 +155,15 @@
     (add-categories-for-transaction! db transaction to-add)
     (find-transaction-by-id db (:id transaction))))
 
+(defn- create-transaction!
+  [db transaction]
+  (db/execute!
+    db
+    (sql/format
+      {:insert-into :transactions
+       :values      [(transaction->row transaction)]}))
+  transaction)
+
 (defrecord MySqlRepository [db]
   r/Repository
   (find-all-categories [this]
@@ -161,7 +176,10 @@
     (find-transactions-between-dates (:db this) from to))
 
   (tag-transaction-with-categories! [this transaction categories]
-    (tag-transaction-with-categories! (:db this) transaction categories)))
+    (tag-transaction-with-categories! (:db this) transaction categories))
+
+  (create-transaction! [this transaction]
+    (create-transaction! (:db this) transaction)))
 
 (defn make-repository []
   (map->MySqlRepository {}))

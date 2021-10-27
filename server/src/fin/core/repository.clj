@@ -6,4 +6,5 @@
   (find-transaction-by-id [this transaction-id])
   (find-transactions-between-dates [this from to])
   (find-categories-for-transaction [this transaction-id])
-  (tag-transaction-with-categories! [this transaction categories]))
+  (tag-transaction-with-categories! [this transaction categories])
+  (create-transaction! [this transaction]))

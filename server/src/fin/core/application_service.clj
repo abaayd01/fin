@@ -8,7 +8,8 @@
   (find-transaction-by-id [this transaction-id])
   (find-transactions-between-dates [this from to])
   (get-transaction-summary [this from to])
-  (tag-transaction-with-categories [this transaction categories]))
+  (tag-transaction-with-categories [this transaction categories])
+  (create-transaction [this description amount transaction-date]))
 
 (defrecord CoreApplicationService [repository]
   ApplicationService
