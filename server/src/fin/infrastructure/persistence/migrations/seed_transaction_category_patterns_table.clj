@@ -1,4 +1,4 @@
-(ns fin.migrations.seed-transaction-category-patterns-table
+(ns fin.infrastructure.persistence.migrations.seed-transaction-category-patterns-table
   (:require
     [fin.components.db :refer [make-db]]
     [fin.protocols :as p]

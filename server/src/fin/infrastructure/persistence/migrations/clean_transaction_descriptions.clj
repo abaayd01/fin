@@ -1,4 +1,4 @@
-(ns fin.migrations.clean-transaction-descriptions
+(ns fin.infrastructure.persistence.migrations.clean-transaction-descriptions
   (:require
     [fin.components.db :refer [make-db]]
     [fin.components.transaction-repository :refer [make-transaction-repository]]

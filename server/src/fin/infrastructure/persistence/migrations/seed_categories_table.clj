@@ -1,4 +1,4 @@
-(ns fin.migrations.seed-categories-table
+(ns fin.infrastructure.persistence.migrations.seed-categories-table
   (:require
     [fin.components.db :refer [make-db]]
     [fin.protocols :as p]
