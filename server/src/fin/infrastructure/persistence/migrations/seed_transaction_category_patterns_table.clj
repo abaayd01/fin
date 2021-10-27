@@ -1,7 +1,6 @@
 (ns fin.infrastructure.persistence.migrations.seed-transaction-category-patterns-table
   (:require
-    [fin.components.db :refer [make-db]]
-    [fin.protocols :as p]
+    [fin.infrastructure.persistence.db :refer [make-db] :as d]
 
     [com.stuartsierra.component :as component]
     [honey.sql :as sql]
@@ -16,14 +15,14 @@
         {:db {:ds :ds}})))
 
 (defn- find-bill-category [db]
-  (first (p/query
+  (first (d/execute!
            db
            (sql/format {:select :*
                         :from   :categories
                         :where  [:= :name "Bills"]}))))
 
 (defn- find-food-category [db]
-  (first (p/query
+  (first (d/execute!
            db
            (sql/format {:select :*
                         :from   :categories
@@ -34,7 +33,7 @@
         system        (component/start-system (create-system {:db-spec db-spec}))
         bill-category (find-bill-category (:db system))
         food-category (find-food-category (:db system))]
-    (p/query
+    (d/execute!
       (:db system)
       (sql/format {:insert-into :transaction_category_patterns
                    :values      [{:category_id (:id bill-category)
@@ -46,7 +45,7 @@
 (defn migrate-down [{:keys [db]}]
   (let [db-spec (dissoc (assoc db :username (:user db)) :user)
         system  (component/start-system (create-system {:db-spec db-spec}))]
-    (p/query (:db system) (sql/format {:truncate :transaction_category_patterns}))
+    (d/execute! (:db system) (sql/format {:truncate :transaction_category_patterns}))
     (component/stop system)))
 
 (comment

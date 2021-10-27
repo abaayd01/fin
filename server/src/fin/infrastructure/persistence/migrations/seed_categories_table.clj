@@ -1,7 +1,6 @@
 (ns fin.infrastructure.persistence.migrations.seed-categories-table
   (:require
-    [fin.components.db :refer [make-db]]
-    [fin.protocols :as p]
+    [fin.infrastructure.persistence.db :refer [make-db] :as d]
 
     [com.stuartsierra.component :as component]
     [honey.sql :as sql]
@@ -18,7 +17,7 @@
 (defn migrate-up [{:keys [db]}]
   (let [db-spec (dissoc (assoc db :username (:user db)) :user)
         system  (component/start-system (create-system {:db-spec db-spec}))]
-    (p/execute!
+    (d/execute!
       (:db system)
       (sql/format {:insert-into [:categories]
                    :values      [{:name "Food"}
@@ -30,7 +29,7 @@
 (defn migrate-down [{:keys [db]}]
   (let [db-spec (dissoc (assoc db :username (:user db)) :user)
         system  (component/start-system (create-system {:db-spec db-spec}))]
-    (p/query (:db system) (sql/format {:truncate :categories}))
+    (d/execute! (:db system) (sql/format {:truncate :categories}))
     (component/stop system)))
 
 (comment
