@@ -27,4 +27,6 @@
   (migratus/create config "create transaction category patterns table")
 
   (migratus/create config "seed transaction category patterns table" :edn)
+
+  (migratus/create config "mark transactions as is internal" :edn)
   )
