@@ -1,6 +1,20 @@
 {:min-bb-version "0.6.0"
- :tasks          {gen-grpc-client
-                  (shell "protoc --clojure_out=grpc-client:./src ./proto/ingress_service.proto")
+ :tasks          {gen-grpc-ingress-service
+                  (do (shell
+                        "protoc --plugin=protoc-gen-grpc-java=./protoc-gen-grpc-java-1.41.0-osx-x86_64.exe -I=. --java_out=./src --grpc-java_out=./src ./proto/ingress_service.proto")
+                      (shell
+                        "clj -X:compile-java"))
+
+                  gen-grpc-core-service
+                  (do
+                    (shell
+                      "rm -f src/grpc/core/*.java")
+                    (shell
+                      "rm -f classes/grpc/core/*.class")
+                    (shell
+                      "protoc --plugin=protoc-gen-grpc-java=./protoc-gen-grpc-java-1.41.0-osx-x86_64.exe -I=. --java_out=./src --grpc-java_out=./src ./proto/core_service.proto")
+                    (shell
+                      "clj -X:compile-java"))
 
                   db:boot
                   (shell "docker run --name fin -e MYSQL_ROOT_PASSWORD=password -d -p 3306:3306 mysql:latest")

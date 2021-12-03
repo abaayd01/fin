@@ -1,7 +1,7 @@
-(ns fin.application.api.entry
+(ns fin.core.application.api.entry
   (:require
-    [fin.application.api.middleware :as middleware]
-    [fin.application.api.handlers :as handlers]
+    [fin.core.application.api.middleware :as middleware]
+    [fin.core.application.api.handlers :as handlers]
 
     [com.stuartsierra.component :as component]
     [malli.core :as m]

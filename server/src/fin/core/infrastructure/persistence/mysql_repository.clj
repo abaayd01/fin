@@ -1,8 +1,8 @@
-(ns fin.infrastructure.persistence.mysql-repository
+(ns fin.core.infrastructure.persistence.mysql-repository
   (:require
-    [fin.core.repository :as r]
+    [fin.core.domain.repository :as r]
     [fin.core.domain.transaction :refer [map->Transaction]]
-    [fin.infrastructure.persistence.db :as db]
+    [fin.core.infrastructure.persistence.db :as db]
     [fin.utils :refer [map-keys]]
 
     [clojure.data :refer [diff]]
@@ -18,15 +18,19 @@
        :description      (:transactions/description row)
        :amount           (:transactions/amount row)
        :transaction-date (:transactions/transaction_date row)
+       :account-number   (:transactions/account_number row)
        :categories       categories
-       :is-internal      (:transactions/is_internal row)})))
+       :is-internal      (:transactions/is_internal row)
+       :source           (:transactions/source row)})))
 
 (defn transaction->row [transaction]
   {:id               (:id transaction)
    :description      (:description transaction)
    :amount           (:amount transaction)
    :transaction_date (:transaction-date transaction)
-   :is_internal      (:is-internal transaction)})
+   :is_internal      (:is-internal transaction)
+   :account_number   (:account-number transaction)
+   :source           (:source transaction)})
 
 (defn row->category [row]
   (cond
@@ -146,6 +150,19 @@
                       :where  [:= :transactions.id transaction-id]}))]
     (first (build-transactions db txn-rows))))
 
+(defn- find-matching-inverse-transaction
+  [db transaction]
+  (let [inverted-transaction (assoc transaction :amount (* -1 (:amount transaction)))
+        txn-rows             (db/execute!
+                               db
+                               (sql/format
+                                 {:select :*
+                                  :from   :transactions
+                                  :where  [:and
+                                           [:= :transactions.amount (:amount inverted-transaction)]
+                                           [:= :transactions.transaction_date (:transaction-date inverted-transaction)]]}))]
+    (first (build-transactions db txn-rows))))
+
 (defn- find-matching-transaction
   [db transaction]
   (let [txn-rows (db/execute!
@@ -155,6 +172,7 @@
                       :from   :transactions
                       :where  [:and
                                [:= :transactions.amount (:amount transaction)]
+                               [:= :transactions.description (:description transaction)]
                                [:= :transactions.transaction_date (:transaction-date transaction)]]}))]
     (first (build-transactions db txn-rows))))
 
@@ -205,6 +223,9 @@
 
   (find-transaction-by-id [this transaction-id]
     (find-transaction-by-id (:db this) transaction-id))
+
+  (find-matching-inverse-transaction [this transaction]
+    (find-matching-inverse-transaction (:db this) transaction))
 
   (find-matching-transaction [this transaction]
     (find-matching-transaction (:db this) transaction))

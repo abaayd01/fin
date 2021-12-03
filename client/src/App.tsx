@@ -10,6 +10,7 @@ import {
   StatLabel,
   StatNumber,
   Table,
+  Tag,
   Tbody,
   Td,
   Th,
@@ -26,9 +27,16 @@ import {useQuery} from "react-query"
 import "./App.scss"
 import DateRangePicker, {DateRangeObject} from "./components/DateRangePicker/DateRangePicker"
 
+type Category = {
+  id: number
+  name: string
+}
+
 type BaseTransaction = {
+  id: number
   description: string
   amount: number
+  categories: Category[]
 }
 
 type Transaction = BaseTransaction & {
@@ -94,6 +102,7 @@ const TransactionsTable = ({transactions}: TransactionsTableProps) => {
           <Th>Description</Th>
           <Th>Amount</Th>
           <Th>Date</Th>
+          <Th>Categories</Th>
         </Tr>
       </Thead>
       <Tbody>
@@ -102,6 +111,7 @@ const TransactionsTable = ({transactions}: TransactionsTableProps) => {
             <Td>{txn.description}</Td>
             <Td>{formatCurrency(txn.amount)}</Td>
             <Td>{txn.transaction_date.format("DD/MM/YYYY")}</Td>
+            <Td>{txn.categories.map(category => (<Tag>{category.name}</Tag>))}</Td>
           </Tr>
         ))}
       </Tbody>
@@ -158,7 +168,7 @@ export const App = () => {
     return (
       <VStack>
         <StatsBar stats={transactionSummary.data.stats}/>
-        <Box maxHeight="800" overflowY="scroll" w="100%">
+        <Box maxHeight="650" overflowY="scroll" w="100%">
           <TransactionsTable transactions={transactionSummary.data.transactions}/>
         </Box>
       </VStack>

@@ -1,6 +1,6 @@
-(ns fin.application.api.handlers
+(ns fin.core.application.api.handlers
   (:require
-    [fin.core.application-service :as service]
+    [fin.core.domain.application-service :as service]
     [tick.core :as t]
     ))
 

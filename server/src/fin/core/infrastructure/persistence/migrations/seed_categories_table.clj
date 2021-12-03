@@ -1,6 +1,6 @@
-(ns fin.infrastructure.persistence.migrations.seed-categories-table
+(ns fin.core.infrastructure.persistence.migrations.seed-categories-table
   (:require
-    [fin.infrastructure.persistence.db :refer [make-db] :as d]
+    [fin.core.infrastructure.persistence.db :refer [make-db] :as d]
 
     [com.stuartsierra.component :as component]
     [honey.sql :as sql]

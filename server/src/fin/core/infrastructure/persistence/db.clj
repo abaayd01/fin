@@ -1,4 +1,4 @@
-(ns fin.infrastructure.persistence.db
+(ns fin.core.infrastructure.persistence.db
   (:require
     [com.stuartsierra.component :as component]
     [next.jdbc :as jdbc]

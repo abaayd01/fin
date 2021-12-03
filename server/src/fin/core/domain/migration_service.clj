@@ -1,7 +1,7 @@
-(ns fin.core.migration-service
+(ns fin.core.domain.migration-service
   (:require
     [fin.core.domain.transaction :refer [invert-transaction]]
-    [fin.core.repository :as repository]
+    [fin.core.domain.repository :as repository]
     [fin.core.domain.transaction-service :as ts]))
 
 (defprotocol MigrationService

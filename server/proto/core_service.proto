@@ -2,10 +2,7 @@ syntax = "proto3";
 
 option java_multiple_files = true;
 
-package grpc.fin;
-
-message GetTransactionsRequest {
-}
+package grpc.core;
 
 message Transaction {
   string date = 1;
@@ -15,10 +12,13 @@ message Transaction {
   string accountNumber = 5;
 }
 
-message GetTransactionsResponse {
+message IngestTransactionsRequest {
   repeated Transaction transactions = 1;
 }
 
-service IngressService {
-  rpc getTransactions(GetTransactionsRequest) returns (GetTransactionsResponse);
+message IngestTransactionsResponse {
+}
+
+service CoreService {
+  rpc IngestTransactions (IngestTransactionsRequest) returns (IngestTransactionsResponse) {}
 }

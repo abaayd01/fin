@@ -1,4 +1,4 @@
-{:paths      ["src" "src/java/grpc" "resources"]
+{:paths      ["src" "src/java/grpc" "resources" "classes"]
 
  :deps       {camel-snake-kebab/camel-snake-kebab      {:mvn/version "0.4.2"}
 
@@ -31,8 +31,6 @@
               ring/ring-defaults                       {:mvn/version "0.3.3"}
               ring/ring-jetty-adapter                  {:mvn/version "1.9.3"}
 
-              protojure/protojure                      {:mvn/version "1.5.11"}
-              protojure/google.protobuf                {:mvn/version "0.9.1"}
               com.google.protobuf/protobuf-java        {:mvn/version "3.13.0"}
 
               org.clojure/math.numeric-tower           {:mvn/version "0.0.4"}
@@ -50,7 +48,14 @@
 
               tortue/spy                               {:mvn/version "2.9.0"}
 
-              vvvvalvalval/scope-capture               {:mvn/version "0.3.2"}}
+              vvvvalvalval/scope-capture               {:mvn/version "0.3.2"}
+
+              io.grpc/grpc-netty                       {:mvn/version "1.41.0"}
+              io.grpc/grpc-protobuf                    {:mvn/version "1.41.0"}
+              io.grpc/grpc-stub                        {:mvn/version "1.41.0"}
+
+              org.suskalo/americano                    {:mvn/version "1.2.0"}
+              }
 
  :exclusions [commons-logging
               log4j
@@ -61,4 +66,8 @@
               org.slf4j/slf4j-log4j12
               org.slf4j/slf4j-log4j13]
 
- :aliases    {:gen-grpc-client {:exec-fn fin.scripts/my-fun}}}
+ :aliases    {:gen-grpc-client {:exec-fn fin.scripts/my-fun}
+
+              :compile-java    {:replace-deps {org.suskalo/americano {:mvn/version "1.2.0"}}
+                                :exec-fn      americano.cli/javac
+                                :exec-args    {:source-paths ["src/grpc/core" "src/grpc/fin"]}}}}

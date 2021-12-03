@@ -1,4 +1,4 @@
-(ns fin.application.api.middleware
+(ns fin.core.application.api.middleware
   (:require
     [camel-snake-kebab.core :as csk]
     [camel-snake-kebab.extras :as cske]

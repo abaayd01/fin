@@ -1,0 +1,3 @@
+{:ns      fin.core.infrastructure.persistence.migrations.mark-transactions-as-is-internal
+ :up-fn   migrate-up
+ :down-fn migrate-down}

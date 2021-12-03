@@ -8,5 +8,5 @@
 
 (defn is-internal?
   [transaction matched-transaction]
-   (or (boolean matched-transaction)
-       (does-match-custom-internal-transaction-rules transaction)))
+  (boolean (or matched-transaction
+               (does-match-custom-internal-transaction-rules transaction))))

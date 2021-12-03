@@ -1,8 +1,8 @@
-(ns fin.infrastructure.persistence.migrations.mark-transactions-as-is-internal
+(ns fin.core.infrastructure.persistence.migrations.mark-transactions-as-is-internal
   (:require
-    [fin.core.migration-service :refer [make-mysql-migration-service] :as ms]
-    [fin.infrastructure.persistence.db :refer [make-db]]
-    [fin.infrastructure.persistence.mysql-repository :refer [make-repository]]
+    [fin.core.domain.migration-service :refer [make-mysql-migration-service] :as ms]
+    [fin.core.infrastructure.persistence.db :refer [make-db]]
+    [fin.core.infrastructure.persistence.mysql-repository :refer [make-repository]]
 
     [com.stuartsierra.component :as component]
     [next.jdbc.connection :as connection])

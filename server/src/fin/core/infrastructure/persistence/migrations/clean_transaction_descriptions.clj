@@ -1,6 +1,6 @@
-(ns fin.infrastructure.persistence.migrations.clean-transaction-descriptions
+(ns fin.core.infrastructure.persistence.migrations.clean-transaction-descriptions
   (:require
-    [fin.infrastructure.persistence.db :refer [make-db] :as d]
+    [fin.core.infrastructure.persistence.db :refer [make-db] :as d]
 
     [clojure.string :as string]
     [com.stuartsierra.component :as component]
