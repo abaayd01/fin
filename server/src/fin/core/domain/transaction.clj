@@ -7,7 +7,8 @@
    description
    categories
    account-number
-   is-internal])
+   is-internal
+   source])
 
 (defn set-is-internal [transaction is-internal]
   (assoc transaction :is-internal is-internal))

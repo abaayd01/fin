@@ -23,11 +23,8 @@
 
 (defn ingest-transactions-handler [application-service]
   (fn [req]
-    (throw (Error. "todo"))
-    (println "how has that worked?")
     (let [transactions (map (comp ->Transaction bean) (:transactionsList req))]
-      (def txns transactions))
-    ;(aps/create-transaction application-service (->Transaction req))
+      (aps/ingest-transactions application-service transactions))
     (build-response
       IngestTransactionsResponse
       {})))
